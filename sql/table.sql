@@ -116,8 +116,7 @@ CREATE TABLE variation (
   mutation varchar(255) DEFAULT NULL,
   consequence varchar(255) DEFAULT NULL,
   PRIMARY KEY (variation_id),
-  KEY genomic_feature_idx (genomic_feature_id),
-  KEY disease_idx (disease_id)
+  KEY genomic_feature_idx (genomic_feature_id)
 );
 
 CREATE TABLE variation_synonym (
