@@ -112,10 +112,12 @@ CREATE TABLE search (
 CREATE TABLE variation (
   variation_id int(10) unsigned NOT NULL AUTO_INCREMENT,
   genomic_feature_id int(10) unsigned NOT NULL,
+  disease_id int(10) unsigned DEFAULT NULL,
   publication_id int(10) unsigned DEFAULT NULL,
   mutation varchar(255) DEFAULT NULL,
   consequence varchar(255) DEFAULT NULL,
   PRIMARY KEY (variation_id),
+  KEY disease_idx (disease_id),
   KEY genomic_feature_idx (genomic_feature_id)
 );
 
