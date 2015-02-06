@@ -79,12 +79,18 @@ sub _fetch {
   my $query = 'SELECT genomic_feature_disease_id, genomic_feature_id, disease_id, DDD_category_attrib FROM genomic_feature_disease';
   $query .= " $constraint;";
   my $dbh = $self->{dbh}; 
+  my $registry = $self->{registry};
+  my $attribute_adaptor = $registry->get_adaptor('attribute');
   my $sth = $dbh->prepare($query);
   $sth->execute() or die 'Could not execute statement ' . $sth->errstr;
   while (my $row = $sth->fetchrow_arrayref()) {
     my %genomic_feature_disease;
     @genomic_feature_disease{@columns} = @$row;
     $genomic_feature_disease{registry} = $self->{registry};
+
+    if ($genomic_feature_disease{DDD_category_attrib}) {
+      $genomic_feature_disease{DDD_category} = $attribute_adaptor->attrib_value_for_id($genomic_feature_disease{DDD_category_attrib});
+    }
     push @genomic_feature_diseases, G2P::GenomicFeatureDisease->new(\%genomic_feature_disease);
   } 
   return $genomic_feature_diseases[0]; 
