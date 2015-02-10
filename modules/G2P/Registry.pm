@@ -71,7 +71,8 @@ sub db_connection {
   my $database = $self->{database};
   my $user = $self->{user};
   my $password = $self->{password};
-  my $dbh = DBI->connect("DBI:mysql:host=$host;database=$database", $user, $password, {'RaiseError' => 1});
+  my $port = $self->{port};
+  my $dbh = DBI->connect("DBI:mysql:host=$host;database=$database;port=$port", $user, $password, {'RaiseError' => 1});
   $self->{dbh} = $dbh;
 }
 
