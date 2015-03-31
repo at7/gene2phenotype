@@ -10,7 +10,7 @@ our @ISA = ('G2P::DBSQL::BaseAdaptor');
 my @columns = qw/disease_id name mim/;
 
 sub store {
-  $self = shift;
+  my $self = shift;
   my $disease = shift;
   my $dbh = $self->{dbh};
 
