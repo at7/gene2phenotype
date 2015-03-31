@@ -29,7 +29,7 @@ sub store {
   $sth->finish();
   
   # get dbID
-  my $dbID = $dbh->last_insert_id();
+  my $dbID = $dbh->last_insert_id(undef, undef, 'disease', 'disease_id');
   $disease->{disease_id} = $dbID;
   $disease->{registry} = $self->{registry}; 
   return $disease;
