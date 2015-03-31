@@ -9,6 +9,35 @@ our @ISA = ('G2P::DBSQL::BaseAdaptor');
 
 my @columns = qw/genomic_feature_disease_id genomic_feature_id disease_id DDD_category_attrib/;
 
+
+sub store {
+  my $self = shift;
+  my $gfd = shift;
+  my $dbh = $self->{dbh};
+
+  my $sth = $dbh->prepare(q{
+    INSERT INTO genomic_feature_disease(
+      genomic_feature_id,
+      disease_id,
+      DDD_category_attrib
+    ) VALUES (?, ?, ?)
+  });
+
+  $sth->execute(
+    $gfd->{genomic_feature_id},
+    $gfd->{disease_id},
+    $gfd->DDD_category_attrib || undef,
+  );
+
+  $sth->finish();
+  
+  # get dbID
+  my $dbID = $dbh->last_insert_id(undef, undef, 'genomic_feature_disease', 'genomic_feature_disease_id'); 
+  $gfd->{genomic_feature_disease_id} = $dbID;
+  $gfd->{registry} = $self->{registry};
+  return $gfd;
+}
+
 sub update {
   my $self = shift;
   my $gfd = shift;
