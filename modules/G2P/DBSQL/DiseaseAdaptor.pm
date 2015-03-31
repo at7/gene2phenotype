@@ -9,6 +9,32 @@ our @ISA = ('G2P::DBSQL::BaseAdaptor');
 
 my @columns = qw/disease_id name mim/;
 
+sub store {
+  $self = shift;
+  my $disease = shift;
+  my $dbh = $self->{dbh};
+
+  my $sth = $dbh->prepare(q{
+    INSERT INTO disease (
+      name,
+      mim
+    ) VALUES (?, ?)
+  });
+
+  $sth->execute(
+    $disease->name,
+    $disease->mim || undef,
+  );
+
+  $sth->finish();
+  
+  # get dbID
+  my $dbID = $dbh->last_insert_id();
+  $disease->{disease_id} = $dbID;
+  $disease->{registry} = $self->{registry}; 
+  return $disease;
+}
+
 sub fetch_by_name {
   my $self = shift;
   my $name = shift;
