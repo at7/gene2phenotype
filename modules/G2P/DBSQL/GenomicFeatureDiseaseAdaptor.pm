@@ -62,7 +62,7 @@ sub update {
     die('G2P::GenomicFeatureDisease arg expected');
   }
 
-  if (!ref($user) || !$gfd->isa('G2P::User')) {
+  if (!ref($user) || !$user->isa('G2P::User')) {
     die('G2P::User arg expected');
   }
   
