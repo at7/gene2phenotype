@@ -24,6 +24,18 @@ sub dbID {
   return $self->{genomic_feature_disease_id};
 }
 
+sub genomic_feature_id {
+  my $self = shift;
+  $self->{genomic_feature_id} = shift if ( @_ );
+  return $self->{genomic_feature_id};
+}
+
+sub disease_id {
+  my $self = shift;
+  $self->{disease_id} = shift if ( @_ );
+  return $self->{disease_id};
+}
+
 sub DDD_category {
   my $self = shift;
   return $self->{DDD_category};
@@ -31,7 +43,7 @@ sub DDD_category {
 
 sub DDD_category_attrib {
   my $self = shift;
-  $self->{DDD_category_attrib} = shift if @_;
+  $self->{DDD_category_attrib} = shift if ( @_ );
   return $self->{DDD_category_attrib};
 }
 
