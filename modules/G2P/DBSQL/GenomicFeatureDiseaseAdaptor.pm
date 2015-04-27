@@ -10,7 +10,7 @@ use G2P::GenomicFeatureDiseaseLog;
 our @ISA = ('G2P::DBSQL::BaseAdaptor');
 
 my @columns = qw/genomic_feature_disease_id genomic_feature_id disease_id DDD_category_attrib/;
-my @columns_log = qw/genomic_feature_disease_id genomic_feature_id disease_id DDD_category_attrib created user_id/;
+my @columns_log = qw/genomic_feature_disease_id genomic_feature_id disease_id DDD_category_attrib created user_id action/;
 
 sub store {
   my $self = shift;
@@ -47,7 +47,7 @@ sub store {
   $gfd->{genomic_feature_disease_id} = $dbID;
   $gfd->{registry} = $self->{registry};
 
-  $self->update_log($gfd, $user);
+  $self->update_log($gfd, $user, 'create');
 
   return $gfd;
 }
@@ -81,7 +81,7 @@ sub update {
   );
   $sth->finish();
 
-  $self->update_log($gfd, $user);
+  $self->update_log($gfd, $user, 'update');
 
   return $gfd;
 }
@@ -90,6 +90,7 @@ sub update_log {
   my $self = shift;
   my $gfd = shift;
   my $user = shift;
+  my $action = shift;
   my $dbh = $self->{dbh};
 
   my $sth = $dbh->prepare(q{
@@ -99,15 +100,17 @@ sub update_log {
       disease_id,
       DDD_category_attrib,
       created,
-      user_id
-    ) VALUES (?, ?, ?, ?,  UNIX_TIMESTAMP(), ?)
+      user_id,
+      action
+    ) VALUES (?, ?, ?, ?,  UNIX_TIMESTAMP(), ?, ?)
   }); 
   $sth->execute(
     $gfd->dbID,
     $gfd->genomic_feature_id,
     $gfd->disease_id,
     $gfd->DDD_category_attrib || undef,
-    $user->user_id
+    $user->user_id,
+    $action
   );
 }
 
