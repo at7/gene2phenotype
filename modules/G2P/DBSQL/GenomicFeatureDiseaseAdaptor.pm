@@ -19,11 +19,11 @@ sub store {
   my $dbh = $self->{dbh};
 
   if (!ref($gfd) || !$gfd->isa('G2P::GenomicFeatureDisease')) {
-    throw('G2P::GenomicFeatureDisease arg expected');
+    die('G2P::GenomicFeatureDisease arg expected');
   }
 
   if (!ref($user) || !$gfd->isa('G2P::User')) {
-    throw('G2P::User arg expected');
+    die('G2P::User arg expected');
   }
 
   my $sth = $dbh->prepare(q{
@@ -59,11 +59,11 @@ sub update {
   my $dbh = $self->{dbh};
 
   if (!ref($gfd) || !$gfd->isa('G2P::GenomicFeatureDisease')) {
-    throw('G2P::GenomicFeatureDisease arg expected');
+    die('G2P::GenomicFeatureDisease arg expected');
   }
 
   if (!ref($user) || !$gfd->isa('G2P::User')) {
-    throw('G2P::User arg expected');
+    die('G2P::User arg expected');
   }
   
   my $sth = $dbh->prepare(q{
@@ -206,7 +206,7 @@ sub fetch_log_entries {
   my $self = shift;
   my $gfd = shift;
   if (!ref($gfd) || !$gfd->isa('G2P::GenomicFeatureDisease')) {
-    throw('G2P::GenomicFeatureDisease arg expected');
+    die('G2P::GenomicFeatureDisease arg expected');
   }
   my $dbh = $self->{dbh};
   my $registry = $self->{registry};
