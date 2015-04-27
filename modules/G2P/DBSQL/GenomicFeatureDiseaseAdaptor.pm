@@ -44,6 +44,9 @@ sub store {
   my $dbID = $dbh->last_insert_id(undef, undef, 'genomic_feature_disease', 'genomic_feature_disease_id'); 
   $gfd->{genomic_feature_disease_id} = $dbID;
   $gfd->{registry} = $self->{registry};
+
+  $self->update_log($gfd, $user);
+
   return $gfd;
 }
 
@@ -75,9 +78,36 @@ sub update {
     $gfd->dbID
   );
   $sth->finish();
+
+  $self->update_log($gfd, $user);
+
   return $gfd;
 }
 
+sub update_log {
+  my $self = shift;
+  my $gfd = shift;
+  my $user = shift;
+  my $dbh = $self->{dbh};
+
+  my $sth = $dbh->prepare(q{
+    INSERT INTO genomic_feature_disease_log(
+      genomic_feature_disease_id,
+      genomic_feature_id,
+      disease_id,
+      DDD_category_attrib,
+      created,
+      user_id
+    ) VALUES (?, ?, ?, ?,  UNIX_TIMESTAMP(), ?)
+  }); 
+  $sth->execute(
+    $gfd->dbID,
+    $gfd->genomic_feature_id,
+    $gfd->disease_id,
+    $gfd->DDD_category_attrib || undef,
+    $user->user_id
+  );
+}
 
 sub fetch_by_dbID {
   my $self = shift;
