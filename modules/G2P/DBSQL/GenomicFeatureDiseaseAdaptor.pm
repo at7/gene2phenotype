@@ -213,7 +213,7 @@ sub fetch_log_entries {
   my $attribute_adaptor = $registry->get_adaptor('attribute');
 
   my $sth = $dbh->prepare(q{
-    SELECT genomic_feature_disease_id, genomic_featue_id, disease_id, DDD_category_attrib, created, user_id FROM genomic_feature_disease
+    SELECT genomic_feature_disease_id, genomic_feature_id, disease_id, DDD_category_attrib, created, user_id, action FROM genomic_feature_disease
     WHERE genomic_feature_disease_id = ?
     ORDER BY created DESC; 
   }); 
