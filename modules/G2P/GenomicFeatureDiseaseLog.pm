@@ -16,6 +16,7 @@ sub new {
     DDD_category_attrib => $params->{DDD_category_attrib},
     created => $params->{created},
     user_id => $params->{user_id},
+    action => $params->{action},
     registry => $params->{registry},
   }, $class;
   return $self;
@@ -63,5 +64,11 @@ sub created {
   $self->{'created'} = shift if ( @_ );
   return $self->{'created'};
 }
+
+sub action {
+  my $self = shift;
+  $self->{'action'} = shift if ( @_ );
+  return $self->{'action'};
+} 
 
 1;
