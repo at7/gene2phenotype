@@ -23,6 +23,13 @@ sub fetch_by_username {
   return $self->_fetch($constraint); 
 }
 
+sub fetch_by_dbID {
+  my $self = shift;
+  my $dbID = shift;
+  my $constraint = "WHERE user_id=$dbID";
+  return $self->_fetch($constraint);
+}
+
 sub _fetch {
   my $self = shift;
   my $constraint = shift;
