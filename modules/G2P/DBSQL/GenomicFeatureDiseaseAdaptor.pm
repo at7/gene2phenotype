@@ -5,10 +5,12 @@ package G2P::DBSQL::GenomicFeatureDiseaseAdaptor;
 
 use G2P::DBSQL::BaseAdaptor;
 use G2P::GenomicFeatureDisease;
+use G2P::GenomicFeatureDiseaseLog;
+
 our @ISA = ('G2P::DBSQL::BaseAdaptor');
 
 my @columns = qw/genomic_feature_disease_id genomic_feature_id disease_id DDD_category_attrib/;
-my @log_columns = qw/genomic_feature_disease_id genomic_feature_id disease_id DDD_category_attrib created user_id/;
+my @columns_log = qw/genomic_feature_disease_id genomic_feature_id disease_id DDD_category_attrib created user_id/;
 
 sub store {
   my $self = shift;
@@ -197,5 +199,35 @@ sub _fetch_all {
   return \@genomic_feature_diseases; 
 }
 
+sub fetch_log_entries {
+  my $self = shift;
+  my $gfd = shift;
+  if (!ref($gfd) || !$gfd->isa('G2P::GenomicFeatureDisease')) {
+    throw('G2P::GenomicFeatureDisease arg expected');
+  }
+  my $dbh = $self->{dbh};
+  my $registry = $self->{registry};
+  my $attribute_adaptor = $registry->get_adaptor('attribute');
+
+  my $sth = $dbh->prepare(q{
+    SELECT genomic_feature_disease_id, genomic_featue_id, disease_id, DDD_category_attrib, created, user_id FROM genomic_feature_disease
+    WHERE genomic_feature_disease_id = ?
+    ORDER BY created DESC; 
+  }); 
+  $sth->execute($gfd->dbID) or die 'Could not execute statement ' . $sth->errstr;
+  my @gfd_log_entries = ();
+  while (my $row = $sth->fetchrow_arrayref()) {
+    my %genomic_feature_disease_log;
+    @genomic_feature_disease_log{@columns_log} = @$row;
+    $genomic_feature_disease_log{registry} = $self->{registry};
+
+    if ($genomic_feature_disease_log{DDD_category_attrib}) {
+      $genomic_feature_disease_log{DDD_category} = $attribute_adaptor->attrib_value_for_id($genomic_feature_disease_log{DDD_category_attrib});
+    }
+    push @gfd_log_entries, G2P::GenomicFeatureDiseaseLog->new(\%genomic_feature_disease_log);
+  } 
+  $sth->finish();
+  return \@gfd_log_entries;
+}
 
 1;
