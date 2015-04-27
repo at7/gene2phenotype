@@ -102,7 +102,7 @@ sub update_log {
       created,
       user_id,
       action
-    ) VALUES (?, ?, ?, ?,  UNIX_TIMESTAMP(), ?, ?)
+    ) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?)
   }); 
   $sth->execute(
     $gfd->dbID,
