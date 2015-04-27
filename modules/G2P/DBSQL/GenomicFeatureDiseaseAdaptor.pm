@@ -8,12 +8,21 @@ use G2P::GenomicFeatureDisease;
 our @ISA = ('G2P::DBSQL::BaseAdaptor');
 
 my @columns = qw/genomic_feature_disease_id genomic_feature_id disease_id DDD_category_attrib/;
-
+my @log_columns = qw/genomic_feature_disease_id genomic_feature_id disease_id DDD_category_attrib created user_id/;
 
 sub store {
   my $self = shift;
   my $gfd = shift;
+  my $user = shift;
   my $dbh = $self->{dbh};
+
+  if (!ref($gfd) || !$gfd->isa('G2P::GenomicFeatureDisease')) {
+    throw('G2P::GenomicFeatureDisease arg expected');
+  }
+
+  if (!ref($user) || !$gfd->isa('G2P::User')) {
+    throw('G2P::User arg expected');
+  }
 
   my $sth = $dbh->prepare(q{
     INSERT INTO genomic_feature_disease(
@@ -41,7 +50,16 @@ sub store {
 sub update {
   my $self = shift;
   my $gfd = shift;
+  my $user = shift;
   my $dbh = $self->{dbh};
+
+  if (!ref($gfd) || !$gfd->isa('G2P::GenomicFeatureDisease')) {
+    throw('G2P::GenomicFeatureDisease arg expected');
+  }
+
+  if (!ref($user) || !$gfd->isa('G2P::User')) {
+    throw('G2P::User arg expected');
+  }
   
   my $sth = $dbh->prepare(q{
     UPDATE genomic_feature_disease
