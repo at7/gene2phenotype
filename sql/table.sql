@@ -85,7 +85,7 @@ CREATE TABLE genomic_feature_disease_action_log (
   created timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   user_id int(10) unsigned NOT NULL, 
   action varchar(128) NOT NULL,
-  PRIMARY KEY (genomic_feature_disease_action_id),
+  KEY genomic_feature_disease_action_idx (genomic_feature_disease_action_id)
 );
 
 CREATE TABLE genomic_feature_disease_phenotype (
