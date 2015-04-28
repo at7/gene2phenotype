@@ -8,12 +8,14 @@ use G2P::GenomicFeatureDiseaseAction;
 our @ISA = ('G2P::DBSQL::BaseAdaptor');
 
 my @columns = qw/genomic_feature_disease_action_id genomic_feature_disease_id allelic_requirement_attrib mutation_consequence_attrib user_id/;
+my @columns_log = qw/genomic_feature_disease_action_id genomic_feature_disease_id allelic_requirement_attrib mutation_consequence_attrib created user_id action/;
 
 sub store {
   my $self = shift;
   my $GFD_action = shift; 
+  my $user = shift;
   my $dbh = $self->{dbh};
-  
+ 
   my $sth = $dbh->prepare(q{
     INSERT INTO genomic_feature_disease_action (
       genomic_feature_disease_id,
