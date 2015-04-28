@@ -15,6 +15,14 @@ sub store {
   my $GFD_action = shift; 
   my $user = shift;
   my $dbh = $self->{dbh};
+
+  if (!ref($GFD_action)) || !$GFD_action->isa('G2P::GenomicFeatureDiseaseAction')) {
+    die ('G2P::GenomicFeatureDiseaseAction arg expected');
+  }
+  
+  if (!ref($user) || !$user->isa('G2P::User')) {
+    die ('G2P::User arg expected');
+  }
  
   my $sth = $dbh->prepare(q{
     INSERT INTO genomic_feature_disease_action (
@@ -37,6 +45,9 @@ sub store {
 
   $GFD_action->{genomic_feature_disease_action_id} = $dbID;
   $GFD_action->{registry} = $self->{registry};  
+
+  $self->update_log($GFD_action, $user, 'create');
+
   return $GFD_action;
 }
 
@@ -62,6 +73,33 @@ sub update {
   ); 
   $sth->finish();
   return $GFD_action;
+}
+
+sub update_log {
+  my $self = shift;
+  my $GFD_action = shift;
+  my $user = shift;
+  my $action = shift;
+  my $dbh = $self->{dbh};
+  my $sth = $dbh->prepare(q{
+    INSERT INTO genomic_feature_disease_action_log(
+      genomic_feature_disease_action_id,
+      genomic_feature_disease_id,
+      allelic_requirement_attrib,
+      mutation_consequence_attrib,
+      created,
+      user_id,
+      action 
+    ) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?)
+  });
+  $sth->execute(
+    $GFD_action->dbID,
+    $GFD_action->genomic_feature_disease_id,
+    $GFD_action->allelic_requirement_attrib || undef,
+    $GFD_action->mutation_consequence_attrib || undef
+    $user->user_id,
+    $action  
+  ); 
 }
 
 sub fetch_by_dbID {
@@ -123,5 +161,44 @@ sub _fetch_all {
   return \@gfd_actions;
 }
 
+sub fetch_log_entries {
+  my $self = shift;
+  my $gfda = shift;
+  if (!ref($gfda) || !$gfda->isa('G2P::GenomicFeatureDiseaseAction')) {
+    die('G2P::GenomicFeatureDiseaseAction arg expected');
+  }
+  my $dbh = $self->{dbh};
+  my $registry = $self->{registry};
+  my $attribute_adaptor = $registry->get_adaptor('attribute');
+
+  my $sth = $dbh->prepare(q{
+    SELECT genomic_feature_disease_action_id, genomic_feature_disease_id, allelic_requirement_attrib, mutation_consequence_attrib, created, user_id, action FROM genomic_feature_disease_action_log
+    WHERE genomic_feature_disease_action_id = ?
+    ORDER BY created DESC; 
+  }); 
+  $sth->execute($gfd->dbID) or die 'Could not execute statement ' . $sth->errstr;
+  my @gfda_log_entries = ();
+  while (my $row = $sth->fetchrow_arrayref()) {
+    my %gfda_log;
+    @gfda_log{@columns_log} = @$row;
+    $gfda_log{registry} = $self->{registry};
+    if ($gfda_log{allelic_requirement_attrib}) {
+      my @ids = split(',', $gfda_log{allelic_requirement_attrib});
+      my @values = ();
+      foreach my $id (@ids) {
+        push @values, $attribute_adaptor->attrib_value_for_id($id);
+      }
+      $gfda_log{allelic_requirement} = join(',', @values);
+    }
+
+    if ($gfda_log{mutation_consequence_attrib}) {
+      $gfda_log{mutation_consequence} = $attribute_adaptor->attrib_value_for_id($gfda_log{mutation_consequence_attrib});
+    }
+
+    push @gfda_log_entries, G2P::GenomicFeatureDiseaseActionLog->new(\%gfda_log);
+  } 
+  $sth->finish();
+  return \@gfda_log_entries;
+}
 
 1;
