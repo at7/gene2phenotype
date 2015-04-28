@@ -16,7 +16,7 @@ sub store {
   my $user = shift;
   my $dbh = $self->{dbh};
 
-  if (!ref($GFD_action)) || !$GFD_action->isa('G2P::GenomicFeatureDiseaseAction')) {
+  if (!ref($GFD_action) || !$GFD_action->isa('G2P::GenomicFeatureDiseaseAction')) {
     die ('G2P::GenomicFeatureDiseaseAction arg expected');
   }
   
@@ -176,7 +176,7 @@ sub fetch_log_entries {
     WHERE genomic_feature_disease_action_id = ?
     ORDER BY created DESC; 
   }); 
-  $sth->execute($gfd->dbID) or die 'Could not execute statement ' . $sth->errstr;
+  $sth->execute($gfda->dbID) or die 'Could not execute statement ' . $sth->errstr;
   my @gfda_log_entries = ();
   while (my $row = $sth->fetchrow_arrayref()) {
     my %gfda_log;
