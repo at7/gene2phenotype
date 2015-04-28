@@ -5,6 +5,8 @@ package G2P::DBSQL::GenomicFeatureDiseaseActionAdaptor;
 
 use G2P::DBSQL::BaseAdaptor;
 use G2P::GenomicFeatureDiseaseAction;
+use G2P::GenomicFeatureDiseaseActionLog;
+
 our @ISA = ('G2P::DBSQL::BaseAdaptor');
 
 my @columns = qw/genomic_feature_disease_action_id genomic_feature_disease_id allelic_requirement_attrib mutation_consequence_attrib user_id/;
