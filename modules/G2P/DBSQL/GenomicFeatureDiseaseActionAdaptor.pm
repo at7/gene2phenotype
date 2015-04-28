@@ -98,7 +98,7 @@ sub update_log {
     $GFD_action->dbID,
     $GFD_action->genomic_feature_disease_id,
     $GFD_action->allelic_requirement_attrib || undef,
-    $GFD_action->mutation_consequence_attrib || undef
+    $GFD_action->mutation_consequence_attrib || undef,
     $user->user_id,
     $action  
   ); 
