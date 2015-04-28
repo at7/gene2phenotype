@@ -56,7 +56,16 @@ sub store {
 sub update {
   my $self = shift;
   my $GFD_action = shift;
+  my $user = shift;
   my $dbh = $self->{dbh};
+
+  if (!ref($GFD_action) || !$GFD_action->isa('G2P::GenomicFeatureDiseaseAction')) {
+    die ('G2P::GenomicFeatureDiseaseAction arg expected');
+  }
+  
+  if (!ref($user) || !$user->isa('G2P::User')) {
+    die ('G2P::User arg expected');
+  }
   
   my $sth = $dbh->prepare(q{
     UPDATE genomic_feature_disease_action
@@ -74,6 +83,9 @@ sub update {
     $GFD_action->{genomic_feature_disease_action_id}
   ); 
   $sth->finish();
+
+  $self->update_log($GFD_action, $user, 'update');
+
   return $GFD_action;
 }
 
