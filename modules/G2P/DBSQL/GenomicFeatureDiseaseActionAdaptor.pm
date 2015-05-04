@@ -9,7 +9,7 @@ use G2P::GenomicFeatureDiseaseActionLog;
 
 our @ISA = ('G2P::DBSQL::BaseAdaptor');
 
-my @columns = qw/genomic_feature_disease_action_id genomic_feature_disease_id allelic_requirement_attrib mutation_consequence_attrib user_id/;
+my @columns = qw/genomic_feature_disease_action_id genomic_feature_disease_id allelic_requirement_attrib mutation_consequence_attrib/;
 my @columns_log = qw/genomic_feature_disease_action_id genomic_feature_disease_id allelic_requirement_attrib mutation_consequence_attrib created user_id action/;
 
 sub store {
@@ -30,16 +30,14 @@ sub store {
     INSERT INTO genomic_feature_disease_action (
       genomic_feature_disease_id,
       allelic_requirement_attrib,
-      mutation_consequence_attrib,
-      user_id
-    ) VALUES (?,?,?,?)
+      mutation_consequence_attrib
+    ) VALUES (?,?,?)
   });
 
   $sth->execute(
     $GFD_action->genomic_feature_disease_id,
     $GFD_action->allelic_requirement_attrib,
     $GFD_action->mutation_consequence_attrib,
-    $GFD_action->{user_id}
   );
   $sth->finish();
 
@@ -71,15 +69,13 @@ sub update {
     UPDATE genomic_feature_disease_action
       SET genomic_feature_disease_id = ?,
           allelic_requirement_attrib = ?,
-          mutation_consequence_attrib = ?,
-          user_id = ?
+          mutation_consequence_attrib = ?
       WHERE genomic_feature_disease_action_id = ?
   });
   $sth->execute(
     $GFD_action->{genomic_feature_disease_id},
     $GFD_action->allelic_requirement_attrib,
     $GFD_action->mutation_consequence_attrib,
-    $GFD_action->{user_id},
     $GFD_action->{genomic_feature_disease_action_id}
   ); 
   $sth->finish();
@@ -145,7 +141,7 @@ sub _fetch_all {
   my $self = shift;
   my $constraint = shift;
   my @gfd_actions = ();
-  my $query = 'SELECT genomic_feature_disease_action_id, genomic_feature_disease_id, allelic_requirement_attrib, mutation_consequence_attrib, user_id FROM genomic_feature_disease_action';
+  my $query = 'SELECT genomic_feature_disease_action_id, genomic_feature_disease_id, allelic_requirement_attrib, mutation_consequence_attrib FROM genomic_feature_disease_action';
   $query .= " $constraint;";
   my $dbh = $self->{dbh};
   my $registry = $self->{registry};
