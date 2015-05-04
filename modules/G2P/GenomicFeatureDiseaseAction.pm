@@ -14,7 +14,6 @@ sub new {
     allelic_requirement_attrib => $params->{allelic_requirement_attrib},
     mutation_consequence => $params->{mutation_consequence} || undef, 
     mutation_consequence_attrib => $params->{mutation_consequence_attrib}, 
-    user_id => $params->{user_id},
     registry => $params->{registry},
   }, $class;
   return $self;
@@ -52,11 +51,5 @@ sub mutation_consequence_attrib {
   return $self->{mutation_consequence_attrib};
 }
 
-sub get_User {
-  my $self = shift;
-  my $registry = $self->{registry};
-  my $user_adaptor = $registry->get_adaptor('user_adaptor');
-  return $user_adaptor->fetch_by_dbID($self->{user_id});
-}
 
 1;
