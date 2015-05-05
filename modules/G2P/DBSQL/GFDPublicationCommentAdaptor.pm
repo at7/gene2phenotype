@@ -35,7 +35,7 @@ sub store {
 
   $sth->execute(
     $GFD_publication_comment->get_GFD_publication()->dbID(),
-    $GFD_publication_comment->comment,
+    $GFD_publication_comment->comment_text,
     $user->user_id 
   );
   $sth->finish();
