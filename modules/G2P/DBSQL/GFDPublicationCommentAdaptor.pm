@@ -69,7 +69,7 @@ sub _fetch_all {
   my $sth = $dbh->prepare($query);
   $sth->execute() or die 'Could not execute statement ' . $sth->errstr;
   while (my $row = $sth->fetchrow_arrayref()) {
-    my %gfd_publication;
+    my %gfd_publication_comment;
     @gfd_publication_comment{@columns} = @$row;
     $gfd_publication_comment{registry} = $self->{registry};
     push @gfd_publication_comments, G2P::GFDPublicationComment->new(\%gfd_publication_comment);
