@@ -39,7 +39,7 @@ sub get_all_GFDPublicationComments {
   my $self = shift;
   my $registry = $self->{registry};
   my $GFD_publication_comment_adaptor = $registry->get_adaptor('GFD_publication_comment');
-  return $GFD_publication_comment_adaptor->fetch_by_dbID($self->{GFD_publication_id});
+  return $GFD_publication_comment_adaptor->fetch_all_by_GenomicFeatureDiseasePublication($self);
 }
 
 
