@@ -29,6 +29,12 @@ sub comment_text {
   return $self->{'comment_text'};
 }
 
+sub GFD_publication_id {
+  my $self = shift;
+  $self->{'GFD_publication_id'} = shift if ( @_ );
+  return $self->{'GFD_publication_id'};
+}
+
 sub get_User {
   my $self = shift;
   my $registry = $self->{registry};
@@ -40,6 +46,13 @@ sub created {
   my $self = shift;
   $self->{'created'} = shift if ( @_ );
   return $self->{'created'};
+}
+
+sub get_GFD_publication {
+  my $self = shift;
+  my $registry = $self->{registry};
+  my $GFD_publication_adaptor = $registry->get_adaptor('genomic_feature_disease_publication');
+  return $GFD_publication_adaptor->fetch_by_dbID($self->{GFD_publication_id});
 }
 
 1;
