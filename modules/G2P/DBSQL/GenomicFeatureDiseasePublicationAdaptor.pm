@@ -30,8 +30,8 @@ sub store {
 
   # get dbID
   my $dbID = $dbh->last_insert_id(undef, undef, 'genomic_feature_disease_publication', 'GFD_publication_id');
-  $gf->{GFD_publication_id} = $dbID;
-  $gf->{registry} = $self->{registry};
+  $GFD_publication->{GFD_publication_id} = $dbID;
+  $GFD_publication->{registry} = $self->{registry};
   return $gf;
 }
 
