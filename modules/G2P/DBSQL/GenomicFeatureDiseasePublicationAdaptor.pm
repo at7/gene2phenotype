@@ -22,8 +22,8 @@ sub store {
     ) VALUES (?,?);
   });
   $sth->execute(
-    $GFD_publication->genomic_feature_disease()->dbID(),
-    $GFD_publication->publication()->dbID()
+    $GFD_publication->get_GenomicFeatureDisease()->dbID(),
+    $GFD_publication->get_Publication()->dbID()
   );
 
   $sth->finish();
