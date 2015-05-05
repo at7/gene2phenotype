@@ -32,7 +32,7 @@ sub store {
   my $dbID = $dbh->last_insert_id(undef, undef, 'genomic_feature_disease_publication', 'GFD_publication_id');
   $GFD_publication->{GFD_publication_id} = $dbID;
   $GFD_publication->{registry} = $self->{registry};
-  return $gf;
+  return $GFD_publication;
 }
 
 sub fetch_all_by_GenomicFeatureDisease {
