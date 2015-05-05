@@ -49,13 +49,32 @@ sub store {
 }
 
 sub fetch_all_by_GenomicFeatureDiseasePublication {
-  
-
-
-
+  my $self = shift;
+  my $GFD_publication = shift;
+  if (!ref($GFD_publication) || !$GFD_publication->isa('G2P::GenomicFeatureDiseasePublication')) {
+    die('G2P::GenomicFeatureDiseasePublication arg expected');
+  }
+  my $GFD_publication_id = $GFD_publication->dbID;
+  my $constraint = "WHERE GFD_publication_id=$GFD_publication_id"; 
+  return $self->_fetch_all($constraint);  
 }
 
-
-
+sub _fetch_all {
+  my $self = shift;
+  my $constraint = shift;
+  my @gfd_publication_comments = ();
+  my $query = 'SELECT GFD_publication_comment_id, GFD_publication_id, comment_text, created, user_id FROM GFD_publication_comment';
+  $query .= " $constraint;";
+  my $dbh = $self->{dbh};
+  my $sth = $dbh->prepare($query);
+  $sth->execute() or die 'Could not execute statement ' . $sth->errstr;
+  while (my $row = $sth->fetchrow_arrayref()) {
+    my %gfd_publication;
+    @gfd_publication_comment{@columns} = @$row;
+    $gfd_publication_comment{registry} = $self->{registry};
+    push @gfd_publication_comments, G2P::GFDPublicationComment->new(\%gfd_publication_comment);
+  }
+  return \@gfd_publication_comments;
+}
 
 1;
