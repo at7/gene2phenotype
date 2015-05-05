@@ -75,4 +75,11 @@ sub get_all_Variations {
   return $variation_adaptor->fetch_all_by_genomic_feature_id_disease_id($self->{genomic_feature_id}, $self->{disease_id});
 }
 
+sub get_all_GFDPublications {
+  my $self = shift;
+  my $registry = $self->{registry};
+  my $GFD_publication_adaptor = $registry->get_adaptor('genomic_feature_disease_publication');
+  return $GFD_publication_adaptor->fetch_all_by_GenomicFeatureDisease($self);
+}
+
 1;
