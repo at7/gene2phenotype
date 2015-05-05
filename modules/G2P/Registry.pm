@@ -10,6 +10,8 @@ use G2P::DBSQL::VariationAdaptor;
 use G2P::DBSQL::GenomicFeatureAdaptor;
 use G2P::DBSQL::GenomicFeatureDiseaseActionAdaptor;
 use G2P::DBSQL::GenomicFeatureDiseaseAdaptor;
+use G2P::DBSQL::GenomicFeatureDiseasePublicationAdaptor;
+use G2P::DBSQL::GFDPublicationCommentAdaptor;
 use G2P::DBSQL::PublicationAdaptor;
 use G2P::DBSQL::OrganSpecificityAdaptor;
 use G2P::DBSQL::UserAdaptor;
@@ -52,6 +54,10 @@ sub get_adaptor {
     return G2P::DBSQL::UserAdaptor->new($self);
   } elsif ($adaptor eq 'attribute') {
     return G2P::DBSQL::AttributeAdaptor->new($self);
+  } elsif ($adaptor eq 'genomic_feature_disease_publication') {
+    return G2P::DBSQL::GenomicFeatureDiseasePublicationAdaptor->new($self);
+  } elsif ($adaptor eq 'GFD_publication_comment') {
+    return G2P::DBSQL::GFDPublicationCommentAdaptor->new($self);
   } else {
     die "No adaptor found for $adaptor\n"; 
   }
