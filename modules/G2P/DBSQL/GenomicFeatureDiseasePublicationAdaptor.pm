@@ -35,6 +35,13 @@ sub store {
   return $GFD_publication;
 }
 
+sub fetch_by_dbID {
+  my $self = shift;
+  my $GFD_publication_id = shift;
+  my $constraint = "WHERE GFD_publication_id=$GFD_publication_id"; 
+  return $self->_fetch($constraint);
+}
+
 sub fetch_all_by_GenomicFeatureDisease {
   my $self = shift;
   my $GFD = shift;
@@ -62,6 +69,24 @@ sub _fetch_all {
     push @gfd_publications, G2P::GenomicFeatureDiseasePublication->new(\%gfd_publication);
   }
   return \@gfd_publications;
+}
+
+sub _fetch {
+  my $self = shift;
+  my $constraint = shift;
+  my @gfd_publications = ();
+  my $query = 'SELECT GFD_publication_id, genomic_feature_disease_id, publication_id FROM genomic_feature_disease_publication';
+  $query .= " $constraint;";
+  my $dbh = $self->{dbh};
+  my $sth = $dbh->prepare($query);
+  $sth->execute() or die 'Could not execute statement ' . $sth->errstr;
+  while (my $row = $sth->fetchrow_arrayref()) {
+    my %gfd_publication;
+    @gfd_publication{@columns} = @$row;
+    $gfd_publication{registry} = $self->{registry};
+    push @gfd_publications, G2P::GenomicFeatureDiseasePublication->new(\%gfd_publication);
+  }
+  return $gfd_publications[0];
 }
 
 
