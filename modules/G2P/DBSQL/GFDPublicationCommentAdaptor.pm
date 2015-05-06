@@ -49,6 +49,7 @@ sub store {
 }
 
 sub delete {
+  my $self = shift;
   my $GFD_publication_comment = shift; 
   my $user = shift;
   my $dbh = $self->{dbh};
@@ -75,10 +76,10 @@ sub delete {
 
   $sth->execute(
     $GFD_publication_comment->dbID,
-    $GFD_publication_id->GFD_publication_id,
-    $GFD_publication_id->comment_text,
-    $GFD_publication_id->created,
-    $GFD_publication_id->{user_id},
+    $GFD_publication_comment->GFD_publication_id,
+    $GFD_publication_comment->comment_text,
+    $GFD_publication_comment->created,
+    $GFD_publication_comment->{user_id},
     $user->user_id
   );
   $sth->finish();
