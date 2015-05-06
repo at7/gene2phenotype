@@ -63,7 +63,7 @@ sub delete {
   }
 
   my $sth = $dbh->prepare(q{
-    INSERT INTO GFD_publication_comment_delete (
+    INSERT INTO GFD_publication_comment_deleted (
       GFD_publication_comment_id,
       GFD_publication_id,
       comment_text,
