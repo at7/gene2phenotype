@@ -48,6 +48,49 @@ sub store {
   return $GFD_publication_comment;
 }
 
+sub delete {
+  my $GFD_publication_comment = shift; 
+  my $user = shift;
+  my $dbh = $self->{dbh};
+
+  if (!ref($GFD_publication_comment) || !$GFD_publication_comment->isa('G2P::GFDPublicationComment')) {
+    die ('G2P::GFDPublicationComment arg expected');
+  }
+  
+  if (!ref($user) || !$user->isa('G2P::User')) {
+    die ('G2P::User arg expected');
+  }
+
+  my $sth = $dbh->prepare(q{
+    INSERT INTO GFD_publication_comment_delete (
+      GFD_publication_comment_id,
+      GFD_publication_id,
+      comment_text,
+      created,
+      user_id,
+      deleted,
+      deleted_by_user_id
+    ) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?)
+  });
+
+  $sth->execute(
+    $GFD_publication_comment->dbID,
+    $GFD_publication_id->GFD_publication_id,
+    $GFD_publication_id->comment_text,
+    $GFD_publication_id->created,
+    $GFD_publication_id->{user_id},
+    $user->user_id
+  );
+  $sth->finish();
+
+  $sth = $dbh->prepare(q{
+    DELETE FROM GFD_publication_comment WHERE GFD_publication_comment_id = ?;
+  });
+  
+  $sth->execute($GFD_publication_comment->dbID);
+  $sth->finish();
+}
+
 sub fetch_all_by_GenomicFeatureDiseasePublication {
   my $self = shift;
   my $GFD_publication = shift;
