@@ -64,18 +64,16 @@ sub delete {
 
   my $sth = $dbh->prepare(q{
     INSERT INTO GFD_publication_comment_deleted (
-      GFD_publication_comment_id,
       GFD_publication_id,
       comment_text,
       created,
       user_id,
       deleted,
       deleted_by_user_id
-    ) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?)
+    ) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?)
   });
 
   $sth->execute(
-    $GFD_publication_comment->dbID,
     $GFD_publication_comment->GFD_publication_id,
     $GFD_publication_comment->comment_text,
     $GFD_publication_comment->created,
