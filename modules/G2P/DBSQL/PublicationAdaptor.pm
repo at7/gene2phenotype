@@ -9,6 +9,33 @@ our @ISA = ('G2P::DBSQL::BaseAdaptor');
 
 my @columns = qw/publication_id pmid title source/;
 
+sub store {
+  my $self = shift;
+  my $publication = shift;  
+  my $dbh = $self->{dbh};
+
+  my $sth = $dbh->prepare(q{
+    INSERT INTO publication (
+      pmid,
+      title,
+      source
+    ) VALUES (?,?,?);
+  });
+  $sth->execute(
+    $publication->pmid || undef,
+    $publication->title || undef,
+    $publication->source || undef,
+  );
+
+  $sth->finish();
+
+  # get dbID
+  my $dbID = $dbh->last_insert_id(undef, undef, 'publication', 'publication_id');
+  $gf->{publication_id} = $dbID;
+  $gf->{registry} = $self->{registry};
+  return $gf;
+}
+
 sub fetch_by_publication_id {
   my $self = shift;
   my $publication_id = shift;
