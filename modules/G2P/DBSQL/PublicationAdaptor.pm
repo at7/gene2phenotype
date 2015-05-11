@@ -31,9 +31,9 @@ sub store {
 
   # get dbID
   my $dbID = $dbh->last_insert_id(undef, undef, 'publication', 'publication_id');
-  $gf->{publication_id} = $dbID;
-  $gf->{registry} = $self->{registry};
-  return $gf;
+  $publication->{publication_id} = $dbID;
+  $publication->{registry} = $self->{registry};
+  return $publication;
 }
 
 sub fetch_by_publication_id {
