@@ -23,6 +23,13 @@ sub fetch_by_dbID {
   return $self->_fetch($constraint);
 }
 
+sub fetch_by_PMID {
+  my $self = shift;
+  my $pmid = shift;
+  my $constraint = "WHERE pmid=$pmid";
+  return $self->_fetch($constraint);
+}
+
 sub _fetch {
   my $self = shift;
   my $constraint = shift;
