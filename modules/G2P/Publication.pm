@@ -18,6 +18,11 @@ sub new {
   return $self;
 }
 
+sub dbID {
+  my $self = shift;
+  return $self->{publication_id};
+}
+
 sub publication_id {
   my $self = shift;
   return $self->{publication_id};
