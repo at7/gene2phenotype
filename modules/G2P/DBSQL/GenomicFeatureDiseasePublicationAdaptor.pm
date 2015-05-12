@@ -42,6 +42,14 @@ sub fetch_by_dbID {
   return $self->_fetch($constraint);
 }
 
+sub fetch_by_GFD_id_publication_id {
+  my $self = shift;
+  my $GFD_id = shift;
+  my $publication_id = shift;
+  my $constraint = "WHERE genomic_feature_disease_id=$GFD_id AND publication_id=$publication_id";
+  return $self->_fetch($constraint);
+}
+
 sub fetch_all_by_GenomicFeatureDisease {
   my $self = shift;
   my $GFD = shift;
