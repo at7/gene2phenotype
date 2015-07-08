@@ -4,6 +4,7 @@ use warnings;
 package G2P::DBSQL::OrganAdaptor;
 
 use G2P::DBSQL::BaseAdaptor;
+use G2P::Organ;
 our @ISA = ('G2P::DBSQL::BaseAdaptor');
 
 my @columns = qw/organ_id name/;
