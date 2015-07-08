@@ -8,6 +8,8 @@ use FileHandle;
 use Getopt::Long;
 
 use G2P::Registry;
+use G2P::Phenotype;
+use G2P::Organ;
 
 use Text::CSV;
 use String::Util 'trim';
@@ -19,11 +21,14 @@ GetOptions(
   'input_file=s',
   'registry_file_old=s',
   'registry_file_new=s',
+  'user_name=s',
 ) or die "Erros: Failed to parse command line arguments\n";
 
 die('An input file is required (--input_file)') unless (defined($config->{input_file}));
 die('A registry file with connection details for the old database is required (--registry_file_old)') unless (defined($config->{registry_file_old}));
 die('A registry file with connection details for the new database is required (--registry_file_new)') unless (defined($config->{registry_file_new}));
+
+my $user_name = $config->{user_name};
 
 my $registry_old = G2P::Registry->new($config->{registry_file_old});
 my $dbh_old = $registry_old->{dbh};
@@ -137,12 +142,17 @@ sub import_data {
   my $GFA   = $registry_new->get_adaptor('genomic_feature');
   my $GFDA  = $registry_new->get_adaptor('genomic_feature_disease'); 
   my $GFDPA = $registry_new->get_adaptor('genomic_feature_disease_publication'); 
+  my $GFDOA = $registry_new->get_adaptor('genomic_feature_disease_organ'); 
+  my $GFDPhenotypeA = $registry_new->get_adaptor('genomic_feature_disease_phenotype'); 
   my $GFDAA = $registry_new->get_adaptor('genomic_feature_disease_action');
   my $attribute_adaptor = $registry_new->get_adaptor('attribute');
   my $user_adaptor = $registry_new->get_adaptor('user');
   my $publication_adaptor = $registry_new->get_adaptor('publication');
+  my $phenotype_adaptor = $registry_new->get_adaptor('phenotype');
+  my $organ_adaptor = $registry_new->get_adaptor('organ');
 
-  my $user = $user_adaptor->fetch_by_username('david_fitzpatrick');
+
+  my $user = $user_adaptor->fetch_by_username($user_name);
   my $allelic_requirements_attribs = $attribute_adaptor->get_attribs_by_type_value('allelic_requirement'); 
   my $mutation_consequence_attribs = $attribute_adaptor->get_attribs_by_type_value('mutation_consequence');
   my $ddd_category_attribs = $attribute_adaptor->get_attribs_by_type_value('DDD_Category');
@@ -199,28 +209,60 @@ sub import_data {
 #      $GFDAA->store($genomic_feature_disease_action, $user);
     }
 
-  # Publication
-  foreach my $pmid (keys %{$G2P->{$key}->{pmid}}) {
-    my $publication = $publication_adaptor->fetch_by_PMID($pmid);
-    if (!$publication) {
-      $publication = G2P::Publication->new({
-        pmid => $pmid,
+    # Publication
+    foreach my $pmid (keys %{$G2P->{$key}->{pmid}}) {
+     my $publication = $publication_adaptor->fetch_by_PMID($pmid);
+      if (!$publication) {
+        $publication = G2P::Publication->new({
+          pmid => $pmid,
+        });
+        $publication = $publication_adaptor->store($publication);
+      }
+      my $GFD_publication = G2P::GenomicFeatureDiseasePublication->new({
+        genomic_feature_disease_id => $GFD->dbID, 
+        publication_id => $publication->dbID,
+        registry => $registry_new,
       });
-      $publication = $publication_adaptor->store($publication);
-    }
-    my $GFD_publication = G2P::GenomicFeatureDiseasePublication->new({
-      genomic_feature_disease_id => $GFD->dbID, 
-      publication_id => $publication->dbID,
-      registry => $registry_new,
-    });
 #    $GFDPA->store($GFD_publication);
+    }
 
-  }
+    # Phenotype 
+=begin
+    foreach my $stable_id (keys %{$G2P->{$key}->{phenotype}}) {
+      my $phenotype = $phenotype_adaptor->fetch_by_stable_id($stable_id);
+      if (!$phenotype) {
+        $phenotype = G2P::Phenotype->new({
+          stable_id => $stable_id,
+        });
+        $phenotype = $phenotype_adaptor->store($phenotype);
+      }
+      my $GFD_phenotype = G2P::GenomicFeatureDiseasePhenotype->new({
+        genomic_feature_disease_id => $GFD->dbID, 
+        phenotype_id => $phenotype->dbID,
+        registry => $registry_new,
+      });
+#      $GFDPhenotypeA->store($GFD_phenotype);
+    }
+=end
+=cut
 
+    # Organ
 
-
-
-
+    foreach my $name (keys %{$G2P->{$key}->{organ}}) {
+      my $organ = $organ_adaptor->fetch_by_name($name);
+      if (!$organ) {
+        $organ = G2P::Organ->new({
+          name => $name,
+        });
+        $organ = $organ_adaptor->store($organ);
+      }
+      my $GFD_organ = G2P::GenomicFeatureDiseaseOrgan->new({
+        genomic_feature_disease_id => $GFD->dbID, 
+        organ_id => $organ->dbID,
+        registry => $registry_new,
+      });
+      $GFDOA->store($GFD_organ);
+    }
 
   }
 }
