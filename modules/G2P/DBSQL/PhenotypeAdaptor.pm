@@ -62,7 +62,6 @@ sub _fetch {
   my @phenotypes = ();
   my $query = 'SELECT phenotype_id, stable_id, name, description FROM phenotype';
   $query .= " $constraint;";
-  print "$query\n";
   my $dbh = $self->{dbh};
   my $sth = $dbh->prepare($query);
   $sth->execute() or die 'Could not execute statement: ' . $sth->errstr;
