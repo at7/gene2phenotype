@@ -7,7 +7,7 @@ use G2P::DBSQL::BaseAdaptor;
 use G2P::Publication;
 our @ISA = ('G2P::DBSQL::BaseAdaptor');
 
-my @columns = qw/phenotype_id pmid title source/;
+my @columns = qw/phenotype_id stable_id name description/;
 
 sub store {
   my $self = shift;
@@ -30,7 +30,7 @@ sub store {
   $sth->finish();
 
   # get dbID
-  my $dbID = $dbh->last_insert_id(undef, undef, 'phen', 'phenotype_id');
+  my $dbID = $dbh->last_insert_id(undef, undef, 'phenotype', 'phenotype_id');
   $phenotype->{phenotype_id} = $dbID;
   $phenotype->{registry} = $self->{registry};
   return $phenotype;
@@ -52,7 +52,7 @@ sub fetch_by_dbID {
 sub fetch_by_stable_id {
   my $self = shift;
   my $stable_id = shift;
-  my $constraint = "WHERE stable_id=$stable_id";
+  my $constraint = "WHERE stable_id='$stable_id'";
   return $self->_fetch($constraint);
 }
 
@@ -62,6 +62,7 @@ sub _fetch {
   my @phenotypes = ();
   my $query = 'SELECT phenotype_id, stable_id, name, description FROM phenotype';
   $query .= " $constraint;";
+  print "$query\n";
   my $dbh = $self->{dbh};
   my $sth = $dbh->prepare($query);
   $sth->execute() or die 'Could not execute statement: ' . $sth->errstr;
