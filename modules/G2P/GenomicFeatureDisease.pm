@@ -89,4 +89,11 @@ sub get_all_GFDPhenotypes {
   return $GFD_phenotype_adaptor->fetch_all_by_GenomicFeatureDisease($self);
 }
 
+sub get_all_GFDOrgans {
+  my $self = shift;
+  my $registry = $self->{registry};
+  my $GFD_organ_adaptor = $registry->get_adaptor('genomic_feature_disease_organ');
+  return $GFD_organ_adaptor->fetch_all_by_GenomicFeatureDisease($self);
+}
+
 1;
