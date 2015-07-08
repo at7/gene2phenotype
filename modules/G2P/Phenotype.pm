@@ -9,7 +9,7 @@ sub new {
   my $params = shift;
   
   my $self = bless {
-    phenotype_id => $params->{publication_id},
+    phenotype_id => $params->{phenotype_id},
     stable_id => $params->{stable_id},
     name => $params->{name},
     description => $params->{description},
