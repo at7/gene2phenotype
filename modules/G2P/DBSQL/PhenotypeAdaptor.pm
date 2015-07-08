@@ -38,7 +38,7 @@ sub store {
 
 sub fetch_by_phenotype_id {
   my $self = shift;
-  my $phenotype_id = shift
+  my $phenotype_id = shift;
   $self->fetch_by_dbID($phenotype_id);
 }
 
