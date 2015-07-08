@@ -20,7 +20,7 @@ sub new {
 
 sub dbID {
   my $self = shift;
-  return $self->{publication_id};
+  return $self->{phenotype_id};
 }
 
 sub stable_id {
@@ -38,9 +38,5 @@ sub description {
   return $self->{description};
 }
 
-sub source {
-  my $self = shift;
-  return $self->{source};
-}
 
 1;
