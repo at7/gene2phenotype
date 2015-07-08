@@ -4,7 +4,7 @@ use warnings;
 package G2P::DBSQL::PhenotypeAdaptor;
 
 use G2P::DBSQL::BaseAdaptor;
-use G2P::Publication;
+use G2P::Phenotype;
 our @ISA = ('G2P::DBSQL::BaseAdaptor');
 
 my @columns = qw/phenotype_id stable_id name description/;
