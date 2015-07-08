@@ -28,7 +28,7 @@ sub store {
   my $dbID = $dbh->last_insert_id(undef, undef, 'organ', 'organ_id');
   $organ->{organ_id} = $dbID;
   $organ->{registry} = $self->{registry};
-  return $phenotype;
+  return $organ;
 }
 
 sub fetch_by_organ_id {
