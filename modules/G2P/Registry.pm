@@ -12,9 +12,11 @@ use G2P::DBSQL::GenomicFeatureDiseaseActionAdaptor;
 use G2P::DBSQL::GenomicFeatureDiseaseAdaptor;
 use G2P::DBSQL::GenomicFeatureDiseasePublicationAdaptor;
 use G2P::DBSQL::GenomicFeatureDiseasePhenotypeAdaptor;
+use G2P::DBSQL::GenomicFeatureDiseaseOrganAdaptor;
 use G2P::DBSQL::GFDPublicationCommentAdaptor;
 use G2P::DBSQL::PublicationAdaptor;
 use G2P::DBSQL::PhenotypeAdaptor;
+use G2P::DBSQL::OrganAdaptor;
 use G2P::DBSQL::OrganSpecificityAdaptor;
 use G2P::DBSQL::UserAdaptor;
 use G2P::DBSQL::AttributeAdaptor;
@@ -48,6 +50,8 @@ sub get_adaptor {
     return G2P::DBSQL::GenomicFeatureDiseaseAdaptor->new($self);
   } elsif ($adaptor eq 'genomic_feature_disease_action') {
     return G2P::DBSQL::GenomicFeatureDiseaseActionAdaptor->new($self);
+  } elsif ($adaptor eq 'organ') {
+    return G2P::DBSQL::OrganAdaptor->new($self);
   } elsif ($adaptor eq 'publication') {
     return G2P::DBSQL::PublicationAdaptor->new($self);
   } elsif ($adaptor eq 'phenotype') {
@@ -58,6 +62,8 @@ sub get_adaptor {
     return G2P::DBSQL::UserAdaptor->new($self);
   } elsif ($adaptor eq 'attribute') {
     return G2P::DBSQL::AttributeAdaptor->new($self);
+  } elsif ($adaptor eq 'genomic_feature_disease_organ') {
+    return G2P::DBSQL::GenomicFeatureDiseaseOrganAdaptor->new($self);
   } elsif ($adaptor eq 'genomic_feature_disease_publication') {
     return G2P::DBSQL::GenomicFeatureDiseasePublicationAdaptor->new($self);
   } elsif ($adaptor eq 'genomic_feature_disease_phenotype') {
