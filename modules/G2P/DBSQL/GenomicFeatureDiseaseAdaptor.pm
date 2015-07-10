@@ -154,6 +154,11 @@ sub fetch_all_by_disease_id {
   return $self->_fetch_all($constraint);
 }
 
+sub fetch_all {
+  my $self = shift;
+  return $self->_fetch_all();
+}
+
 sub _fetch {
   my $self = shift;
   my $constraint = shift;
