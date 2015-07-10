@@ -138,6 +138,13 @@ sub main {
 sub import_data {
   my $G2P = shift;
 
+  # truncate:
+  my @tables = qw/genomic_feature_disease genomic_feature_disease_action genomic_feature_disease_log genomic_feature_disease_action_log genomic_feature_disease_organ genomic_feature_disease_phenotype genomic_feature_disease_publication/;
+
+  my $dbh = $registry_new->{dbh};
+  foreach my $table (@tables) {
+    $dbh->do(qq{TRUNCATE TABLE $table;}) or die $dbh->errstr; 
+  }
   my $disease_adaptor = $registry_new->get_adaptor('disease'); 
   my $GFA   = $registry_new->get_adaptor('genomic_feature');
   my $GFDA  = $registry_new->get_adaptor('genomic_feature_disease'); 
@@ -206,7 +213,7 @@ sub import_data {
         allelic_requirement_attrib => $allelic_requirement_attrib,
         mutation_consequence_attrib => $mutation_consequence_attrib,
       });
-#      $GFDAA->store($genomic_feature_disease_action, $user);
+      $GFDAA->store($genomic_feature_disease_action, $user);
     }
 
     # Publication
@@ -223,11 +230,10 @@ sub import_data {
         publication_id => $publication->dbID,
         registry => $registry_new,
       });
-#    $GFDPA->store($GFD_publication);
+    $GFDPA->store($GFD_publication);
     }
 
     # Phenotype 
-=begin
     foreach my $stable_id (keys %{$G2P->{$key}->{phenotype}}) {
       my $phenotype = $phenotype_adaptor->fetch_by_stable_id($stable_id);
       if (!$phenotype) {
@@ -241,13 +247,9 @@ sub import_data {
         phenotype_id => $phenotype->dbID,
         registry => $registry_new,
       });
-#      $GFDPhenotypeA->store($GFD_phenotype);
+      $GFDPhenotypeA->store($GFD_phenotype);
     }
-=end
-=cut
-
     # Organ
-
     foreach my $name (keys %{$G2P->{$key}->{organ}}) {
       my $organ = $organ_adaptor->fetch_by_name($name);
       if (!$organ) {
@@ -263,7 +265,6 @@ sub import_data {
       });
       $GFDOA->store($GFD_organ);
     }
-
   }
 }
 
@@ -285,8 +286,4 @@ sub get_known_disease_data {
   }
   $sth->finish();
 }
-
-
-
-
 
