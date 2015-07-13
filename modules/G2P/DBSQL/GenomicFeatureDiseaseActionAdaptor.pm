@@ -207,10 +207,10 @@ sub fetch_log_entries {
 
   my $sth = $dbh->prepare(q{
     SELECT genomic_feature_disease_action_id, genomic_feature_disease_id, allelic_requirement_attrib, mutation_consequence_attrib, created, user_id, action FROM genomic_feature_disease_action_log
-    WHERE genomic_feature_disease_action_id = ?
+    WHERE genomic_feature_disease_id = ?
     ORDER BY created DESC; 
   }); 
-  $sth->execute($gfda->dbID) or die 'Could not execute statement ' . $sth->errstr;
+  $sth->execute($gfda->genomic_feature_disease_id) or die 'Could not execute statement ' . $sth->errstr;
   my @gfda_log_entries = ();
   while (my $row = $sth->fetchrow_arrayref()) {
     my %gfda_log;
