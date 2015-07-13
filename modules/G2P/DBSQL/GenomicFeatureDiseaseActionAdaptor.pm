@@ -85,6 +85,30 @@ sub update {
   return $GFD_action;
 }
 
+sub delete {
+  my $self = shift;
+  my $GFDA = shift; 
+  my $user = shift;
+  my $dbh = $self->{dbh};
+
+  if (!ref($GFDA) || !$GFDA->isa('G2P::GenomicFeatureDiseaseAction')) {
+    die ('G2P::GenomicFeatureDiseaseAction arg expected');
+  }
+  
+  if (!ref($user) || !$user->isa('G2P::User')) {
+    die ('G2P::User arg expected');
+  }
+
+  $self->update_log($GFDA, $user, 'delete')
+
+  $sth = $dbh->prepare(q{
+    DELETE FROM genomic_feature_disease_action WHERE genomic_feature_disease_action_id = ?;
+  });
+  
+  $sth->execute($GFDA->dbID);
+  $sth->finish();
+}
+
 sub update_log {
   my $self = shift;
   my $GFD_action = shift;
