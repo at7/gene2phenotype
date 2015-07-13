@@ -101,7 +101,7 @@ sub delete {
 
   $self->update_log($GFDA, $user, 'delete');
 
-  $sth = $dbh->prepare(q{
+  my $sth = $dbh->prepare(q{
     DELETE FROM genomic_feature_disease_action WHERE genomic_feature_disease_action_id = ?;
   });
   
