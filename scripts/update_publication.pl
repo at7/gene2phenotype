@@ -32,7 +32,6 @@ sub main {
   my $server = 'http://www.ebi.ac.uk/europepmc/webservices/rest/search/query=';
   
   my $pmids = get_pmids();
-
   foreach my $pmid (@$pmids) {
     my $response = $http->get($server.$pmid.'&format=json');
     die "Failed !\n" unless $response->{success};
@@ -61,7 +60,7 @@ sub main {
 sub get_pmids {
   my @pmids = ();
   my $sth = $dbh->prepare(q{
-    SELECT pmid, title, source FROM publication;
+    SELECT pmid, title, source FROM publication WHERE title IS NULL OR source IS NULL;
   }); 
   $sth->execute() or die 'Could not execute statement ' . $sth->errstr;
   my ($pmid, $title, $source);
