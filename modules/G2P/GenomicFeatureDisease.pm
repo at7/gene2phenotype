@@ -14,7 +14,7 @@ sub new {
     disease_id => $params->{disease_id},
     DDD_category => $params->{DDD_category},
     DDD_category_attrib => $params->{DDD_category_attrib},
-    is_visible => $param->{is_visible},
+    is_visible => $params->{is_visible},
     registry => $params->{registry},
   }, $class;
   return $self;
