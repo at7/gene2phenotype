@@ -9,8 +9,8 @@ use G2P::GenomicFeatureDiseaseLog;
 
 our @ISA = ('G2P::DBSQL::BaseAdaptor');
 
-my @columns = qw/genomic_feature_disease_id genomic_feature_id disease_id DDD_category_attrib/;
-my @columns_log = qw/genomic_feature_disease_id genomic_feature_id disease_id DDD_category_attrib created user_id action/;
+my @columns = qw/genomic_feature_disease_id genomic_feature_id disease_id DDD_category_attrib is_visible/;
+my @columns_log = qw/genomic_feature_disease_id genomic_feature_id disease_id DDD_category_attrib is_visible created user_id action/;
 
 sub store {
   my $self = shift;
@@ -30,14 +30,16 @@ sub store {
     INSERT INTO genomic_feature_disease(
       genomic_feature_id,
       disease_id,
-      DDD_category_attrib
-    ) VALUES (?, ?, ?)
+      DDD_category_attrib,
+      is_visible
+    ) VALUES (?, ?, ?, ?)
   });
 
   $sth->execute(
     $gfd->{genomic_feature_id},
     $gfd->{disease_id},
     $gfd->DDD_category_attrib || undef,
+    $gfd->is_visible,
   );
 
   $sth->finish();
@@ -70,13 +72,15 @@ sub update {
     UPDATE genomic_feature_disease
       SET genomic_feature_id = ?,
           disease_id = ?,
-          DDD_category_attrib = ?
+          DDD_category_attrib = ?,
+          is_visible = ?
       WHERE genomic_feature_disease_id = ? 
   });
   $sth->execute(
     $gfd->{genomic_feature_id},
     $gfd->{disease_id},
     $gfd->{DDD_category_attrib},
+    $gfd->{is_visible},
     $gfd->dbID
   );
   $sth->finish();
@@ -99,6 +103,7 @@ sub update_log {
       genomic_feature_id,
       disease_id,
       DDD_category_attrib,
+      is_visible,
       created,
       user_id,
       action
@@ -109,6 +114,7 @@ sub update_log {
     $gfd->genomic_feature_id,
     $gfd->disease_id,
     $gfd->DDD_category_attrib || undef,
+    $gfd->is_visible,
     $user->user_id,
     $action
   );
@@ -187,7 +193,7 @@ sub _fetch_all {
   my $self = shift;
   my $constraint = shift;
   my @genomic_feature_diseases = ();
-  my $query = 'SELECT genomic_feature_disease_id, genomic_feature_id, disease_id, DDD_category_attrib FROM genomic_feature_disease';
+  my $query = 'SELECT genomic_feature_disease_id, genomic_feature_id, disease_id, DDD_category_attrib, is_visible FROM genomic_feature_disease';
   $query .= " $constraint;";
   my $dbh = $self->{dbh}; 
   my $registry = $self->{registry};
@@ -218,7 +224,7 @@ sub fetch_log_entries {
   my $attribute_adaptor = $registry->get_adaptor('attribute');
 
   my $sth = $dbh->prepare(q{
-    SELECT genomic_feature_disease_id, genomic_feature_id, disease_id, DDD_category_attrib, created, user_id, action FROM genomic_feature_disease_log
+    SELECT genomic_feature_disease_id, genomic_feature_id, disease_id, DDD_category_attrib, is_visible, created, user_id, action FROM genomic_feature_disease_log
     WHERE genomic_feature_disease_id = ?
     ORDER BY created DESC; 
   }); 
