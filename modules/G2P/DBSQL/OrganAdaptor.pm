@@ -52,6 +52,11 @@ sub fetch_by_name {
   return $self->_fetch($constraint);
 }
 
+sub fetch_all {
+  my $self = shift;
+  return $self->_fetch_all('');
+}
+
 sub _fetch {
   my $self = shift;
   my $constraint = shift;
@@ -69,5 +74,26 @@ sub _fetch {
   }
   return $organs[0];
 }
+
+
+sub _fetch_all {
+  my $self = shift;
+  my $constraint = shift;
+  my @organs = ();
+  my $query = 'SELECT organ_id, name FROM organ';
+  $query .= " $constraint;";
+  my $dbh = $self->{dbh};
+  my $sth = $dbh->prepare($query);
+  $sth->execute() or die 'Could not execute statement: ' . $sth->errstr;
+  while (my $row = $sth->fetchrow_arrayref()) {
+    my %organ;
+    @organ{@columns} = @$row;
+    $organ{registry} = $self->{registry};
+    push @organs, G2P::Organ->new(\%organ); 
+  }
+  return \@organs;
+}
+
+
 
 1;
