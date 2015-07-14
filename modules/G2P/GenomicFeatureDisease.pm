@@ -14,6 +14,7 @@ sub new {
     disease_id => $params->{disease_id},
     DDD_category => $params->{DDD_category},
     DDD_category_attrib => $params->{DDD_category_attrib},
+    is_visible => $param->{is_visible},
     registry => $params->{registry},
   }, $class;
   return $self;
@@ -45,6 +46,12 @@ sub DDD_category_attrib {
   my $self = shift;
   $self->{DDD_category_attrib} = shift if ( @_ );
   return $self->{DDD_category_attrib};
+}
+
+sub is_visible {
+  my $self = shift;
+  $self->{is_visible} = shift if ( @_ );
+  return $self->{is_visible};
 }
 
 sub get_all_GenomicFeatureDiseaseActions {
