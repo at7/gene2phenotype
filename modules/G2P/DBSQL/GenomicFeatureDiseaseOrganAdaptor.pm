@@ -61,6 +61,15 @@ sub fetch_all_by_GenomicFeatureDisease {
   return $self->_fetch_all($constraint);
 }
 
+sub delete_all_by_GFD_id {
+  my $self = shift;
+  my $GFD_id = shift;
+  my $dbh = $self->{dbh};
+  my $sth = $dbh->prepare("DELETE FROM genomic_feature_disease_organ WHERE genomic_feature_disease_id=$GFD_id");
+  $sth->execute() or die 'Could not execute statement ' . $sth->errstr;
+  $sth->finish();
+}
+
 sub _fetch_all {
   my $self = shift;
   my $constraint = shift;
