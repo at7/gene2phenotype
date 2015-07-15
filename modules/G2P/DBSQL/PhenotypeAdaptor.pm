@@ -83,6 +83,13 @@ sub fetch_by_stable_id {
   return $self->_fetch($constraint);
 }
 
+sub fetch_by_name {
+  my $self = shift;
+  my $name = shift;
+  my $constraint = "WHERE name='$name'";
+  return $self->_fetch($constraint);
+}
+
 sub fetch_all {
   my $self = shift;
   return $self->_fetch_all('');
