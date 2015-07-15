@@ -35,6 +35,28 @@ sub store {
   return $GFD_phenotype;
 }
 
+sub delete {
+  my $self = shift;
+  my $GFDP = shift; 
+  my $user = shift;
+  my $dbh = $self->{dbh};
+
+  if (!ref($GFDP) || !$GFDP->isa('G2P::GenomicFeatureDiseasePhenotype')) {
+    die ('G2P::GenomicFeatureDiseasePhenotype arg expected');
+  }
+  
+  if (!ref($user) || !$user->isa('G2P::User')) {
+    die ('G2P::User arg expected');
+  }
+
+  my $sth = $dbh->prepare(q{
+    DELETE FROM genomic_feature_disease_phenotype WHERE genomic_feature_disease_phenotype_id = ?;
+  });
+  
+  $sth->execute($GFDP->dbID);
+  $sth->finish();
+}
+
 sub fetch_by_dbID {
   my $self = shift;
   my $GFD_phenotype_id = shift;
