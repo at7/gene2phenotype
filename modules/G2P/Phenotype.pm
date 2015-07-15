@@ -25,16 +25,19 @@ sub dbID {
 
 sub stable_id {
   my $self = shift;
+  $self->{stable_id} = shift if @_;
   return $self->{stable_id};
 }
 
 sub name {
   my $self = shift;
+  $self->{name} = shift if @_;
   return $self->{name};
 }
 
 sub description {
   my $self = shift;
+  $self->{description} = shift if @_;
   return $self->{description};
 }
 
