@@ -50,7 +50,7 @@ sub delete {
   }
 
   my $sth = $dbh->prepare(q{
-    DELETE FROM genomic_feature_disease_phenotype WHERE genomic_feature_disease_phenotype_id = ?;
+    DELETE FROM genomic_feature_disease_phenotype WHERE GFD_phenotype_id = ?;
   });
   
   $sth->execute($GFDP->dbID);
