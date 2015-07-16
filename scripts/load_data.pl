@@ -73,9 +73,7 @@ sub main {
     @phenotypes = split(/\s;|;\s+/, $fields[2]) if ($fields[2]);
     my $allelic_requirement = trim $fields[3];
 
-    if ($allelic_requirement !~ m/^X/) {
-      $allelic_requirement = lcfirst($allelic_requirement);
-    }
+    $allelic_requirement = lcfirst($allelic_requirement);
     $allelic_requirements->{$allelic_requirement} = 1;
     my $consequence = trim $fields[4];
     if ($consequence eq "5' or 3'UTR mutation") {
