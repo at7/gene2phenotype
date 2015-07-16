@@ -39,7 +39,7 @@ sub store {
     $gfd->{genomic_feature_id},
     $gfd->{disease_id},
     $gfd->DDD_category_attrib || undef,
-    $gfd->is_visible,
+    $gfd->is_visible || 1,
   );
 
   $sth->finish();
@@ -114,7 +114,7 @@ sub update_log {
     $gfd->genomic_feature_id,
     $gfd->disease_id,
     $gfd->DDD_category_attrib || undef,
-    $gfd->is_visible,
+    $gfd->is_visible || 1,
     $user->user_id,
     $action
   );
