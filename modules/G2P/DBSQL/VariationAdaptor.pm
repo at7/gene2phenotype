@@ -9,6 +9,59 @@ our @ISA = ('G2P::DBSQL::BaseAdaptor');
 
 my @columns = qw/variation_id genomic_feature_id disease_id publication_id mutation consequence/;
 
+sub store {
+  my $self = shift;
+  my $variation = shift;  
+  my $dbh = $self->{dbh};
+
+  my $sth = $dbh->prepare(q{
+    INSERT INTO variation (
+      genomic_feature_id,
+      disease_id,
+      publication_id,
+      mutation,
+      consequence
+    ) VALUES (?,?,?,?,?)
+  });
+  $sth->execute(
+    $variation->genomic_feature_id,
+    $variation->disease_id,
+    $variation->publication_id || undef,
+    $variation->mutation || undef,
+    $variation->consequence || undef
+  );
+
+  $sth->finish();
+
+  # get dbID
+  my $dbID = $dbh->last_insert_id(undef, undef, 'variation', 'variation_id');
+  $variation->{variation_id} = $dbID;
+  $variation->{registry} = $self->{registry};
+
+  # insert synonyms
+  $sth = $dbh->prepare(q{
+    INSERT INTO variation_synonym (
+      variation_id,
+      name,
+      source
+    ) VALUES (?,?,?)
+  });
+
+  my $synonyms = $variation->{synonyms};
+  foreach my $source (keys %$synonyms) {
+    foreach my $name (keys %{$synonyms->{$source}}) {
+      $sth->execute(
+        $dbID,
+        $name,
+        $source
+      );
+    }  
+  } 
+  $sth->finish();
+  return $variation;
+}
+
+
 # disease_name -> genomic_feature -> variation
 sub fetch_all_by_genomic_feature_id_disease_id {
   my $self = shift;
@@ -93,15 +146,5 @@ sub _fetch_all {
   }
   return \@variations;
 }
-
-sub store {
-
-}
-
-
-sub update {
-
-}
-
 
 1;
