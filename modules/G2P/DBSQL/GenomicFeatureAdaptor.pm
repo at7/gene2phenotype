@@ -79,7 +79,7 @@ sub update {
 
 sub fetch_all {
   my $self = shift;
-  return $self->_fetch_all();
+  return $self->_fetch_all('');
 }
 
 sub fetch_by_dbID {
@@ -131,7 +131,21 @@ sub _fetch {
 
 sub _fetch_all {
   my $self = shift;
-  my $query = 'SELECT genomic_feature_id, gene_symbol, mim, ensembl_stable_id FROM genomic_feature;';
+  my $constraint = shift;
+  my @genomic_features = ();
+  my $query = 'SELECT genomic_feature_id, gene_symbol, mim, ensembl_stable_id FROM genomic_feature';
+  $query .= " $constraint;";
+  my $dbh = $self->{dbh};
+  my $sth = $dbh->prepare($query, {mysql_use_result => 1});
+  $sth->execute() or die 'Could not execute statement: ' . $sth->errstr;
+  while (my $row = $sth->fetchrow_arrayref()) {
+    my %genomic_feature;
+    @genomic_feature{@columns} = @$row;
+    $genomic_feature{registry} = $self->{registry};
+    push @genomic_features, G2P::GenomicFeature->new(\%genomic_feature);
+  }
+  $sth->finish();
+  return \@genomic_features;
 }
 
 
