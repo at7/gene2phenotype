@@ -15,6 +15,7 @@ sub new {
     publication_id => $params->{publication_id},
     mutation => $params->{mutation},
     consequence => $params->{consequence}, 
+    synonyms => $params->{synonyms},
     registry => $params->{registry}, 
   }, $class;
   return $self;
