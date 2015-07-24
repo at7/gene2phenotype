@@ -231,13 +231,34 @@ sub import_data {
     $GFDPA->store($GFD_publication);
     }
 
+    # fetch alt_ids
+    my $alt_ids = {};
+    my ($term_id, $accession);
+    my $host = '';
+    my $dbname = '';
+    my $user = '';
+    my $password = '';
+    my $dbh = DBI->connect("DBI:mysql:host=$host;database=$dbname", $user, $password, {'RaiseError' => 1});
+
+    my $sth = $dbh->prepare(q{
+      SELECT term_id, accession from alt_id;
+    },  {mysql_use_result => 1});
+    $sth->execute() or die $dbh->errstr;
+    $sth->bind_columns(\($term_id, $accession));
+    while ($sth->fetch) {
+      $alt_ids->{$accession} = $term_id;
+    }
+    $sth->finish();
+
     # Phenotype 
     foreach my $stable_id (keys %{$G2P->{$key}->{phenotype}}) {
       my $phenotype = $phenotype_adaptor->fetch_by_stable_id($stable_id);
       if (!$phenotype) {
-        $phenotype = G2P::Phenotype->new({
-          stable_id => $stable_id,
-        });
+        my $alt_id = $alt_ids->{$stable_id};
+        $phenotype = $phenotype_adaptor->fetch_by_dbID($alt_id);
+#        $phenotype = G2P::Phenotype->new({
+#          stable_id => $stable_id,
+#        });
         $phenotype = $phenotype_adaptor->store($phenotype);
       }
       my $GFD_phenotype = G2P::GenomicFeatureDiseasePhenotype->new({
