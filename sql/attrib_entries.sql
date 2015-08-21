@@ -35,3 +35,4 @@ INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (31, 3, 'bot
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (32, 3, 'confirmed DD gene');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (33, 3, 'possible DD gene');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (34, 3, 'probable DD gene');
+INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (35, 3, 'child IF');
