@@ -35,4 +35,12 @@ sub get_Phenotype {
   return $phenotype_adaptor->fetch_by_dbID($self->{phenotype_id});
 }
 
+sub get_all_GFDPhenotypeComments {
+  my $self = shift;
+  my $registry = $self->{registry};
+  my $GFD_phenotype_comment_adaptor = $registry->get_adaptor('GFD_phenotype_comment');
+  return $GFD_phenotype_comment_adaptor->fetch_all_by_GenomicFeatureDiseasePhenotype($self);
+}
+
+
 1;
