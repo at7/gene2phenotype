@@ -14,6 +14,7 @@ use G2P::DBSQL::GenomicFeatureDiseasePublicationAdaptor;
 use G2P::DBSQL::GenomicFeatureDiseasePhenotypeAdaptor;
 use G2P::DBSQL::GenomicFeatureDiseaseOrganAdaptor;
 use G2P::DBSQL::GFDPublicationCommentAdaptor;
+use G2P::DBSQL::GFDPhenotypeCommentAdaptor;
 use G2P::DBSQL::PublicationAdaptor;
 use G2P::DBSQL::PhenotypeAdaptor;
 use G2P::DBSQL::OrganAdaptor;
@@ -70,6 +71,8 @@ sub get_adaptor {
     return G2P::DBSQL::GenomicFeatureDiseasePhenotypeAdaptor->new($self);
   } elsif ($adaptor eq 'GFD_publication_comment') {
     return G2P::DBSQL::GFDPublicationCommentAdaptor->new($self);
+  } elsif ($adaptor eq 'GFD_phenotype_comment') {
+    return G2P::DBSQL::GFDPhenotypeCommentAdaptor->new($self);
   } else {
     die "No adaptor found for $adaptor\n"; 
   }
