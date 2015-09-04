@@ -162,7 +162,7 @@ CREATE TABLE organ_specificity (
 CREATE TABLE phenotype (
   phenotype_id int(10) unsigned NOT NULL AUTO_INCREMENT,
   stable_id varchar(255) DEFAULT NULL,
-  name varchar(50) DEFAULT NULL,
+  name varchar(255) DEFAULT NULL,
   description varchar(255) DEFAULT NULL,
   PRIMARY KEY (phenotype_id),
   UNIQUE KEY desc_idx (description),
