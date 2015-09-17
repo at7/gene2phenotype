@@ -46,7 +46,7 @@ sub _fetch {
     @user{@columns} = @$row;
     $user{registry} = $self->{registry};
     if ($user{panel}) {
-      my @ids = split(',', $user{panel}) {
+      my @ids = split(',', $user{panel});
       my @values = ();
       foreach my $id (@ids) {
         push @values, $attribute_adaptor->attrib_value_for_id($id);
