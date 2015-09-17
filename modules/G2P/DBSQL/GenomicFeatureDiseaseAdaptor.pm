@@ -212,6 +212,11 @@ sub _fetch_all {
     if ($genomic_feature_disease{DDD_category_attrib}) {
       $genomic_feature_disease{DDD_category} = $attribute_adaptor->attrib_value_for_id($genomic_feature_disease{DDD_category_attrib});
     }
+  
+    if ($genomic_feature_disease{panel}) {
+      $genomic_feature_disease{panel} = $attribute_adaptor->attrib_value_for_id($genomic_feature_disease{panel});
+    }
+
     push @genomic_feature_diseases, G2P::GenomicFeatureDisease->new(\%genomic_feature_disease);
   } 
   return \@genomic_feature_diseases; 
