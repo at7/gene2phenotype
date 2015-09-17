@@ -37,12 +37,22 @@ sub _fetch {
   my $query = 'SELECT user_id, username, email, panel FROM user';
   $query .= " $constraint;";
   my $dbh = $self->{dbh};
+  my $registry = $self->{registry};
+  my $attribute_adaptor = $registry->get_adaptor('attribute');
   my $sth = $dbh->prepare($query);
   $sth->execute() or die 'Could not execute statement: ' . $sth->errstr;
   while (my $row = $sth->fetchrow_arrayref()) {
     my %user;
     @user{@columns} = @$row;
     $user{registry} = $self->{registry};
+    if ($user{panel}) {
+      my @ids = split(',', $user{panel}) {
+      my @values = ();
+      foreach my $id (@ids) {
+        push @values, $attribute_adaptor->attrib_value_for_id($id);
+      }
+      $user{panel} = join(',', @values);      
+    }   
     push @users, G2P::User->new(\%user);  
   }
   $sth->finish();
