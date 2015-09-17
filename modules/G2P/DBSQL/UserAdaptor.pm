@@ -7,7 +7,7 @@ use G2P::DBSQL::BaseAdaptor;
 use G2P::User;
 our @ISA = ('G2P::DBSQL::BaseAdaptor');
 
-my @columns = qw/user_id username email/;
+my @columns = qw/user_id username email panel/;
 
 sub fetch_by_email {
   my $self = shift;
@@ -34,7 +34,7 @@ sub _fetch {
   my $self = shift;
   my $constraint = shift;
   my @users = ();
-  my $query = 'SELECT user_id, username, email FROM user';
+  my $query = 'SELECT user_id, username, email, panel FROM user';
   $query .= " $constraint;";
   my $dbh = $self->{dbh};
   my $sth = $dbh->prepare($query);
@@ -46,7 +46,7 @@ sub _fetch {
     push @users, G2P::User->new(\%user);  
   }
   $sth->finish();
-  return $users[0];    
+  return $users[0];
 }
 
 1;
