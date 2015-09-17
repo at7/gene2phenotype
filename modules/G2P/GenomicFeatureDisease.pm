@@ -15,6 +15,7 @@ sub new {
     DDD_category => $params->{DDD_category},
     DDD_category_attrib => $params->{DDD_category_attrib},
     is_visible => $params->{is_visible},
+    panel => $params->{panel},
     registry => $params->{registry},
   }, $class;
   return $self;
@@ -52,6 +53,12 @@ sub is_visible {
   my $self = shift;
   $self->{is_visible} = shift if ( @_ );
   return $self->{is_visible};
+}
+
+sub panel {
+  my $self = shift;
+  $self->{panel} = shift if ( @_ );
+  return $self->{panel};
 }
 
 sub get_all_GenomicFeatureDiseaseActions {
