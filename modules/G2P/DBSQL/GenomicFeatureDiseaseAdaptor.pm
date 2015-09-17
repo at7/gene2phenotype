@@ -9,7 +9,7 @@ use G2P::GenomicFeatureDiseaseLog;
 
 our @ISA = ('G2P::DBSQL::BaseAdaptor');
 
-my @columns = qw/genomic_feature_disease_id genomic_feature_id disease_id DDD_category_attrib is_visible/;
+my @columns = qw/genomic_feature_disease_id genomic_feature_id disease_id DDD_category_attrib is_visible panel/;
 my @columns_log = qw/genomic_feature_disease_id genomic_feature_id disease_id DDD_category_attrib is_visible created user_id action/;
 
 sub store {
@@ -31,8 +31,9 @@ sub store {
       genomic_feature_id,
       disease_id,
       DDD_category_attrib,
-      is_visible
-    ) VALUES (?, ?, ?, ?)
+      is_visible,
+      panel
+    ) VALUES (?, ?, ?, ?, ?)
   });
 
   $sth->execute(
@@ -40,6 +41,7 @@ sub store {
     $gfd->{disease_id},
     $gfd->DDD_category_attrib || undef,
     $gfd->is_visible || 1,
+    $gfd->panel,
   );
 
   $sth->finish();
@@ -73,7 +75,8 @@ sub update {
       SET genomic_feature_id = ?,
           disease_id = ?,
           DDD_category_attrib = ?,
-          is_visible = ?
+          is_visible = ?,
+          panel = ?
       WHERE genomic_feature_disease_id = ? 
   });
   $sth->execute(
@@ -81,6 +84,7 @@ sub update {
     $gfd->{disease_id},
     $gfd->{DDD_category_attrib},
     $gfd->{is_visible},
+    $gfd->{panel},
     $gfd->dbID
   );
   $sth->finish();
@@ -169,7 +173,7 @@ sub _fetch {
   my $self = shift;
   my $constraint = shift;
   my @genomic_feature_diseases = ();
-  my $query = 'SELECT genomic_feature_disease_id, genomic_feature_id, disease_id, DDD_category_attrib, is_visible FROM genomic_feature_disease';
+  my $query = 'SELECT genomic_feature_disease_id, genomic_feature_id, disease_id, DDD_category_attrib, is_visible, panel FROM genomic_feature_disease';
   $query .= " $constraint;";
   my $dbh = $self->{dbh}; 
   my $registry = $self->{registry};
@@ -193,7 +197,7 @@ sub _fetch_all {
   my $self = shift;
   my $constraint = shift;
   my @genomic_feature_diseases = ();
-  my $query = 'SELECT genomic_feature_disease_id, genomic_feature_id, disease_id, DDD_category_attrib, is_visible FROM genomic_feature_disease';
+  my $query = 'SELECT genomic_feature_disease_id, genomic_feature_id, disease_id, DDD_category_attrib, is_visible, panel FROM genomic_feature_disease';
   $query .= " $constraint;";
   my $dbh = $self->{dbh}; 
   my $registry = $self->{registry};
