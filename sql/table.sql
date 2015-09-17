@@ -51,6 +51,7 @@ CREATE TABLE genomic_feature_disease (
   disease_id int(10) unsigned NOT NULL,
   DDD_category_attrib set('31', '32', '33', '34', '35') DEFAULT NULL,
   is_visible tinyint(1) unsigned NOT NULL DEFAULT '1',
+  panel tinyint(1) DEFAULT NULL,
   PRIMARY KEY (genomic_feature_disease_id),
   UNIQUE KEY genomic_feature_disease (genomic_feature_id, disease_id),
   KEY genomic_feature_idx (genomic_feature_id),
@@ -209,6 +210,7 @@ CREATE TABLE user (
   user_id int(10) unsigned NOT NULL AUTO_INCREMENT,
   username varchar(255) NOT NULL,
   email varchar(255) NOT NULL,
+  panel set('36','37','38','39','40','41') DEFAULT NULL,
   PRIMARY KEY (user_id),
   UNIQUE KEY user_idx (username),
   UNIQUE KEY email_idx (email)
