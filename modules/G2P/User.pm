@@ -12,6 +12,7 @@ sub new {
     user_id => $params->{user_id},
     username => $params->{username},
     email => $params->{email},
+    panel => $params->{panel}
   }, $class;
   return $self;
 }
@@ -29,6 +30,11 @@ sub username {
 sub email {
   my $self = shift;
   return $self->{email};
+}
+
+sub panel {
+  my $self = shift;
+  return $self->{panel};
 }
 
 1;
