@@ -149,11 +149,41 @@ sub fetch_all_by_GenomicFeature {
   return $self->_fetch_all($constraint);
 }
 
+sub fetch_all_by_GenomicFeature_panel {
+  my $self = shift;
+  my $genomic_feature = shift;
+  my $panel = shift;
+  if ($panel eq 'ALL') {
+    $self->fetch_all_by_GenomicFeature($genomic_feature);
+  }
+  my $registry = $self->{registry};
+  my $attribute_adaptor = $registry->get_adaptor('attribute');
+  my $panel_id = $attribute_adaptor->attrib_id_for_value($panel);
+  my $genomic_feature_id = $genomic_feature->dbID;
+  my $constraint = "WHERE genomic_feature_id=$genomic_feature_id AND panel=$panel_id";
+  return $self->_fetch_all($constraint);
+}
+
 sub fetch_all_by_Disease {
   my $self = shift;
   my $disease = shift;
   my $disease_id = $disease->dbID;
   my $constraint = "WHERE disease_id=$disease_id";
+  return $self->_fetch_all($constraint);
+}
+
+sub fetch_all_by_Disease_panel {
+  my $self = shift;
+  my $disease = shift;
+  my $panel = shift;
+  if ($panel eq 'ALL') {
+    $self->fetch_all_by_Disease($disease);
+  } 
+  my $registry = $self->{registry};
+  my $attribute_adaptor = $registry->get_adaptor('attribute');
+  my $panel_id = $attribute_adaptor->attrib_id_for_value($panel);
+  my $disease_id = $disease->dbID;
+  my $constraint = "WHERE disease_id=$disease_id AND panel=$panel_id";
   return $self->_fetch_all($constraint);
 }
 
