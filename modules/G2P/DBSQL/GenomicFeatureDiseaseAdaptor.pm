@@ -154,7 +154,7 @@ sub fetch_all_by_GenomicFeature_panel {
   my $genomic_feature = shift;
   my $panel = shift;
   if ($panel eq 'ALL') {
-    $self->fetch_all_by_GenomicFeature($genomic_feature);
+    return $self->fetch_all_by_GenomicFeature($genomic_feature);
   }
   my $registry = $self->{registry};
   my $attribute_adaptor = $registry->get_adaptor('attribute');
@@ -177,7 +177,7 @@ sub fetch_all_by_Disease_panel {
   my $disease = shift;
   my $panel = shift;
   if ($panel eq 'ALL') {
-    $self->fetch_all_by_Disease($disease);
+    return $self->fetch_all_by_Disease($disease);
   } 
   my $registry = $self->{registry};
   my $attribute_adaptor = $registry->get_adaptor('attribute');
