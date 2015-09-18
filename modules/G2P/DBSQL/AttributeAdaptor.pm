@@ -7,6 +7,21 @@ package G2P::DBSQL::AttributeAdaptor;
 use G2P::DBSQL::BaseAdaptor;
 our @ISA = ('G2P::DBSQL::BaseAdaptor'); 
 
+sub attrib_id_for_value {
+  my ($self, $attrib_value) = @_;
+  my $sql = qq{
+    SELECT attrib_id FROM attrib WHERE value=?;
+  };
+  my $dbh = $self->{dbh};
+  my $sth = $dbh->prepare($sql);
+  $sth->execute($attrib_value);
+  my $attrib_id;
+  $sth->bind_columns(\$attrib_id);
+  $sth->fetch;
+  $sth->finish;
+  return $attrib_id;  
+}
+
 sub attrib_value_for_id {
   my ($self, $attrib_id) = @_;
 
