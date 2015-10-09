@@ -35,6 +35,31 @@ sub store {
   return $GFD_publication;
 }
 
+sub delete {
+  my $self = shift;
+  my $GFDP = shift; 
+  my $user = shift;
+  my $dbh = $self->{dbh};
+
+  if (!ref($GFDP) || !$GFDP->isa('G2P::GenomicFeatureDiseasePublication')) {
+    die ('G2P::GenomicFeatureDiseasePublication arg expected');
+  }
+  
+  if (!ref($user) || !$user->isa('G2P::User')) {
+    die ('G2P::User arg expected');
+  }
+
+  my $sth = $dbh->prepare(q{
+    DELETE FROM GFD_publication_comment WHERE GFD_publication_id = ?;
+  });
+  $sth->execute($GFDP->dbID);
+  $sth = $dbh->prepare(q{
+    DELETE FROM genomic_feature_disease_publication WHERE GFD_publication_id = ?;
+  });
+  $sth->execute($GFDP->dbID);
+  $sth->finish();
+}
+
 sub fetch_by_dbID {
   my $self = shift;
   my $GFD_publication_id = shift;
