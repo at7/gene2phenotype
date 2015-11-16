@@ -61,6 +61,12 @@ sub panel {
   return $self->{panel};
 }
 
+sub panel_attrib {
+  my $self = shift;
+  $self->{panel_attrib} = shift if ( @_ );
+  return $self->{panel_attrib};
+}
+
 sub get_all_GenomicFeatureDiseaseActions {
   my $self = shift;
   my $registry = $self->{registry};
