@@ -32,7 +32,7 @@ sub store {
       disease_id,
       DDD_category_attrib,
       is_visible,
-      panel
+      panel_attrib
     ) VALUES (?, ?, ?, ?, ?)
   });
 
@@ -41,7 +41,7 @@ sub store {
     $gfd->{disease_id},
     $gfd->DDD_category_attrib || undef,
     $gfd->is_visible || 1,
-    $gfd->panel_attrib,
+    $gfd->panel_attrib || undef,
   );
 
   $sth->finish();
@@ -76,15 +76,15 @@ sub update {
           disease_id = ?,
           DDD_category_attrib = ?,
           is_visible = ?,
-          panel = ?
+          panel_attrib = ?
       WHERE genomic_feature_disease_id = ? 
   });
   $sth->execute(
-    $gfd->{genomic_feature_id},
-    $gfd->{disease_id},
-    $gfd->{DDD_category_attrib},
-    $gfd->{is_visible},
-    $gfd->{panel_attrib},
+    $gfd->genomic_feature_id,
+    $gfd->disease_id,
+    $gfd->DDD_category_attrib,
+    $gfd->is_visible,
+    $gfd->panel_attrib,
     $gfd->dbID
   );
   $sth->finish();
@@ -158,9 +158,9 @@ sub fetch_all_by_GenomicFeature_panel {
   }
   my $registry = $self->{registry};
   my $attribute_adaptor = $registry->get_adaptor('attribute');
-  my $panel_id = $attribute_adaptor->attrib_id_for_value($panel);
+  my $panel_attrib = $attribute_adaptor->attrib_id_for_value($panel);
   my $genomic_feature_id = $genomic_feature->dbID;
-  my $constraint = "WHERE genomic_feature_id=$genomic_feature_id AND panel=$panel_id";
+  my $constraint = "WHERE genomic_feature_id=$genomic_feature_id AND panel_attrib=$panel_attrib";
   return $self->_fetch_all($constraint);
 }
 
@@ -181,9 +181,9 @@ sub fetch_all_by_Disease_panel {
   } 
   my $registry = $self->{registry};
   my $attribute_adaptor = $registry->get_adaptor('attribute');
-  my $panel_id = $attribute_adaptor->attrib_id_for_value($panel);
+  my $panel_attrib = $attribute_adaptor->attrib_id_for_value($panel);
   my $disease_id = $disease->dbID;
-  my $constraint = "WHERE disease_id=$disease_id AND panel=$panel_id";
+  my $constraint = "WHERE disease_id=$disease_id AND panel_attrib=$panel_attrib";
   return $self->_fetch_all($constraint);
 }
 
@@ -203,7 +203,7 @@ sub _fetch {
   my $self = shift;
   my $constraint = shift;
   my @genomic_feature_diseases = ();
-  my $query = 'SELECT genomic_feature_disease_id, genomic_feature_id, disease_id, DDD_category_attrib, is_visible, panel FROM genomic_feature_disease';
+  my $query = 'SELECT genomic_feature_disease_id, genomic_feature_id, disease_id, DDD_category_attrib, is_visible, panel_attrib FROM genomic_feature_disease';
   $query .= " $constraint;";
   my $dbh = $self->{dbh}; 
   my $registry = $self->{registry};
@@ -232,7 +232,7 @@ sub _fetch_all {
   my $self = shift;
   my $constraint = shift;
   my @genomic_feature_diseases = ();
-  my $query = 'SELECT genomic_feature_disease_id, genomic_feature_id, disease_id, DDD_category_attrib, is_visible, panel FROM genomic_feature_disease';
+  my $query = 'SELECT genomic_feature_disease_id, genomic_feature_id, disease_id, DDD_category_attrib, is_visible, panel_attrib FROM genomic_feature_disease';
   $query .= " $constraint;";
   my $dbh = $self->{dbh}; 
   my $registry = $self->{registry};
