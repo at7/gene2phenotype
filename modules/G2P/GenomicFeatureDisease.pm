@@ -16,6 +16,7 @@ sub new {
     DDD_category_attrib => $params->{DDD_category_attrib},
     is_visible => $params->{is_visible},
     panel => $params->{panel},
+    panel_attrib => $params->{panel_attrib},
     registry => $params->{registry},
   }, $class;
   return $self;
@@ -40,12 +41,34 @@ sub disease_id {
 
 sub DDD_category {
   my $self = shift;
+  my $DDD_category = shift;
+  my $registry = $self->{registry};
+  my $attribute_adaptor = $registry->get_adaptor('attribute');
+  if ($DDD_category) {
+    $self->{DDD_category} = $DDD_category;
+    my $DDD_category_attrib = $attribute_adaptor->attrib_id_for_value($DDD_category);
+    $self->DDD_category_attrib($DDD_category_attrib);
+  } else {
+    if (!$self->{DDD_category} && $self->{DDD_category_attrib}) {
+      $self->{DDD_category} = $attribute_adaptor->attrib_value_for_id($self->{DDD_category_attrib});
+    }
+  }
   return $self->{DDD_category};
 }
 
 sub DDD_category_attrib {
   my $self = shift;
-  $self->{DDD_category_attrib} = shift if ( @_ );
+  my $DDD_category_attrib = shift;
+  my $registry = $self->{registry};
+  my $attribute_adaptor = $registry->get_adaptor('attribute');
+  if ($DDD_category_attrib) {
+    $self->{DDD_category_attrib} = $DDD_category_attrib;
+    $self->{DDD_category} = $attribute_adaptor->attrib_value_for_id($self->{DDD_category_attrib});
+  } else {
+    if (!$self->{DDD_category_attrib} && $self->{DDD_category}) {
+      $self->{DDD_category_attrib} = $attribute_adaptor->attrib_id_for_value($self->{DDD_category});
+    }
+  }
   return $self->{DDD_category_attrib};
 }
 
@@ -57,13 +80,34 @@ sub is_visible {
 
 sub panel {
   my $self = shift;
-  $self->{panel} = shift if ( @_ );
+  my $panel = shift;
+  my $registry = $self->{registry};
+  my $attribute_adaptor = $registry->get_adaptor('attribute');
+  if ($panel) {
+    $self->{panel} = $panel;
+    $self->{panel_attrib} = $attribute_adaptor->attrib_id_for_value($self->{panel});
+  } else {
+    if (!$self->{panel} && $self->{panel_attrib}) {
+      $self->{panel} = $attribute_adaptor->attrib_value_for_id($self->{panel_attrib});
+    }
+  }
   return $self->{panel};
 }
 
 sub panel_attrib {
   my $self = shift;
-  $self->{panel_attrib} = shift if ( @_ );
+  my $panel_attrib = shift;
+  my $registry = $self->{registry};
+  my $attribute_adaptor = $registry->get_adaptor('attribute');
+  if ($panel_attrib) {
+    $self->{panel_attrib} = $panel_attrib;
+    $self->{panel} = $attribute_adaptor->attrib_value_for_id($self->{panel_attrib});
+  } else {
+    if (!$self->{panel_attrib} && $self->{panel}) {
+      $self->{panel_attrib} = $attribute_adaptor->attrib_id_for_value($self->{panel});  
+    }
+  }
+
   return $self->{panel_attrib};
 }
 
