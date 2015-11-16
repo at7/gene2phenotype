@@ -9,7 +9,7 @@ use G2P::GenomicFeatureDiseaseLog;
 
 our @ISA = ('G2P::DBSQL::BaseAdaptor');
 
-my @columns = qw/genomic_feature_disease_id genomic_feature_id disease_id DDD_category_attrib is_visible panel/;
+my @columns = qw/genomic_feature_disease_id genomic_feature_id disease_id DDD_category_attrib is_visible panel_attrib/;
 my @columns_log = qw/genomic_feature_disease_id genomic_feature_id disease_id DDD_category_attrib is_visible created user_id action/;
 
 sub store {
@@ -41,7 +41,7 @@ sub store {
     $gfd->{disease_id},
     $gfd->DDD_category_attrib || undef,
     $gfd->is_visible || 1,
-    $gfd->panel,
+    $gfd->panel_attrib,
   );
 
   $sth->finish();
@@ -84,7 +84,7 @@ sub update {
     $gfd->{disease_id},
     $gfd->{DDD_category_attrib},
     $gfd->{is_visible},
-    $gfd->{panel},
+    $gfd->{panel_attrib},
     $gfd->dbID
   );
   $sth->finish();
@@ -219,8 +219,8 @@ sub _fetch {
       $genomic_feature_disease{DDD_category} = $attribute_adaptor->attrib_value_for_id($genomic_feature_disease{DDD_category_attrib});
     }
 
-    if ($genomic_feature_disease{panel}) {
-      $genomic_feature_disease{panel} = $attribute_adaptor->attrib_value_for_id($genomic_feature_disease{panel});
+    if ($genomic_feature_disease{panel_attrib}) {
+      $genomic_feature_disease{panel} = $attribute_adaptor->attrib_value_for_id($genomic_feature_disease{panel_attrib});
     }
 
     push @genomic_feature_diseases, G2P::GenomicFeatureDisease->new(\%genomic_feature_disease);
@@ -248,8 +248,8 @@ sub _fetch_all {
       $genomic_feature_disease{DDD_category} = $attribute_adaptor->attrib_value_for_id($genomic_feature_disease{DDD_category_attrib});
     }
   
-    if ($genomic_feature_disease{panel}) {
-      $genomic_feature_disease{panel} = $attribute_adaptor->attrib_value_for_id($genomic_feature_disease{panel});
+    if ($genomic_feature_disease{panel_attrib}) {
+      $genomic_feature_disease{panel} = $attribute_adaptor->attrib_value_for_id($genomic_feature_disease{panel_attrib});
     }
 
     push @genomic_feature_diseases, G2P::GenomicFeatureDisease->new(\%genomic_feature_disease);
