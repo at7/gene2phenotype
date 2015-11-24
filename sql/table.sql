@@ -45,6 +45,13 @@ CREATE TABLE genomic_feature (
   KEY ensembl_stable_id_idx (ensembl_stable_id)
 );
 
+CREATE TABLE genomic_feature_synonym (
+  genomic_feature_id int(10) unsigned NOT NULL,
+  name varchar(255) NOT NULL,
+  UNIQUE KEY name (genomic_feature_id, name),
+  KEY genomic_feature_idx (genomic_feature_id)
+);
+
 CREATE TABLE genomic_feature_disease (
   genomic_feature_disease_id int(10) unsigned NOT NULL AUTO_INCREMENT,
   genomic_feature_id int(10) unsigned NOT NULL,
