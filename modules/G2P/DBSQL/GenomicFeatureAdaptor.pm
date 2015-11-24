@@ -110,6 +110,21 @@ sub fetch_by_ensembl_stable_id {
   return $self->_fetch($constraint);
 }
 
+sub fetch_by_synoym {
+  my $self = shift;
+  my $name = shift;
+  my $query = "SELECT genomic_feature_id FROM genomic_feature_synonym WHERE name='$name' LIMIT 1";
+  my $genomic_feature_id;
+  my $dbh = $self->{dbh};
+  my $sth = $dbh->prepare($query, {mysql_use_result => 1});
+  $sth->bind_param(\$genomic_feature_id);
+  $sth->execute() or die 'Could not execute statement: ' . $sth->errstr;
+  $sth->fetch;
+  $sth->finish();
+  return undef unless (defined($genomic_feature_id));
+  return $self->fetch_by_dbID($genomic_feature_id);
+}
+
 sub _fetch {
   my $self = shift;
   my $constraint = shift;
