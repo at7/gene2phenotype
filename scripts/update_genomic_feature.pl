@@ -138,10 +138,12 @@ sub main {
     }
   }  
 
+  my $delete_old_GF_ids = {};
   foreach my $old_gene_symbol (keys %$old_gfs) {
     my $core_gene_names = {};
     my $old_genomic_feature = $gfa->fetch_by_gene_symbol($old_gene_symbol);
     my $old_genomic_feature_id = $old_genomic_feature->dbID();
+    $delete_old_GF_ids->{$old_genomic_feature_id} = 1;
     my $genes = $gene_adaptor->fetch_all_by_external_name($old_gene_symbol);
     foreach my $gene (@$genes) {
       my $external_name = $gene->external_name;
@@ -170,6 +172,10 @@ sub main {
       $dbh->do(qq{INSERT INTO genomic_feature_synonym(genomic_feature_id, name) VALUES($genomic_feature_id, '$new_gene_symbol');}) or die $dbh->errstr; 
     } 
     $dbh->do(qq{INSERT INTO genomic_feature_synonym(genomic_feature_id, name) VALUES($genomic_feature_id, '$old_gene_symbol');}) or die $dbh->errstr; 
+  }
+
+  foreach my $old_GF_id (keys %$delete_old_GF_ids) {
+    $dbh->do(qq{DELETE FROM genomic_feature where genomic_feature_id = $old_GF_id;}) or die $dbh->errstr; 
   }
 }
 
