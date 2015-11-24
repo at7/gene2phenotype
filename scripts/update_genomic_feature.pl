@@ -3,6 +3,7 @@
 use strict;
 use warnings;
 
+use Bio::EnsEMBL::Registry;
 use DBI;
 use FileHandle;
 use Getopt::Long;
@@ -10,6 +11,16 @@ use Getopt::Long;
 use G2P::Registry;
 
 # perl update_genomic_feature.pl -registry_file registry -gtf_file Homo_sapiens.GRCh38.79.gtf
+
+=begin
+  - store all new gene_symbol, stable_id pairs from the gtf file
+  - fetch all genomic_features from gene2phenotype database
+  - fetch all genomic_feature_ids that are part of a genomic_feature_disease (GFD)
+  - delete all entries from genomic_feature that are not present in the most recent gtf file and are not part of a GFD 
+  - sort out entries that are not in the gtf file but are part of a GFD
+=end
+=cut
+
 
 my $config = {};
 
@@ -27,6 +38,15 @@ die ('A gtf_file must be defiened (--gtf_file)') unless (defined($config->{gtf_f
 
 my $registry = G2P::Registry->new($config->{registry_file});
 my $dbh = $registry->{dbh};
+
+my $ensembl_registry = 'Bio::EnsEMBL::Registry';
+
+$ensembl_registry->load_registry_from_db(
+  -host => 'ensembldb.ensembl.org',
+  -user => 'anonymous'
+);
+
+my $gene_adaptor = $ensembl_registry->get_adaptor('human', 'core', 'gene');
 
 main();
 
@@ -72,26 +92,100 @@ sub main {
     }
     $fh_out->close();
   }
-  
+
+  my $gf_ids_in_GFDs = genomic_feature_ids_from_GFDs(); 
+
   my $genomic_features_from_db = load_genomic_feature_from_db();
+
+  my $delete_gfs = {};
+
+  my $gfa = $registry->get_adaptor('genomic_feature');
+  my $gfda = $registry->get_adaptor('genomic_feature_disease');
   foreach my $gene_symbol (keys %$genomic_features_from_db) {
-    foreach my $genomic_feature_id (keys %{$genomic_features_from_db->{$gene_symbol}}) {
-      my $ensembl_stable_id = $genomic_features_from_db->{$gene_symbol}->{$genomic_feature_id};
-      if ($ensembl_stable_id eq '\N') {
-        $ensembl_stable_id = $gene_name_2_gene_id->{$gene_symbol};
-        if ($ensembl_stable_id) {
-          $dbh->do(qq{UPDATE genomic_feature SET ensembl_stable_id='$ensembl_stable_id' WHERE genomic_feature_id=$genomic_feature_id;}) or die $dbh->errstr; 
+    if (!$gene_name_2_gene_id->{$gene_symbol}) {
+      foreach my $gf_id (keys %{$genomic_features_from_db->{$gene_symbol}}) {
+        if (!$gf_ids_in_GFDs->{$gf_id}) {
+          $delete_gfs->{$gf_id} = 1;
         }
-      }
+      }     
+    }
+  }  
+  
+  delete_from_genomic_feature($delete_gfs);
+
+  $genomic_features_from_db = load_genomic_feature_from_db();
+  my $insert_gfs = {};
+
+  while (my ($gene_name, $gene_id) = each %$gene_name_2_gene_id) {
+    if (!$genomic_features_from_db->{$gene_name}) {
+      $insert_gfs->{$gene_name} = $gene_id;
     }
   }
 
-  foreach my $gene_symbol (keys %$gene_name_2_gene_id) {
-    if (!$genomic_features_from_db->{$gene_symbol}) {
-      my $ensembl_stable_id = $gene_name_2_gene_id->{$gene_symbol}; 
-      $dbh->do(qq{INSERT INTO genomic_feature(gene_symbol, ensembl_stable_id) VALUES('$gene_symbol', '$ensembl_stable_id');}) or die $dbh->errstr; 
+  insert_into_genomic_feature($insert_gfs);
+
+  $genomic_features_from_db = load_genomic_feature_from_db();
+
+  my $old_gfs = {};
+  
+  foreach my $gene_symbol (keys %$genomic_features_from_db) {
+    if (!$gene_name_2_gene_id->{$gene_symbol}) {
+      foreach my $gf_id (keys %{$genomic_features_from_db->{$gene_symbol}}) {
+        if ($gf_ids_in_GFDs->{$gf_id}) {
+          $old_gfs->{$gene_symbol} = $gf_id;
+        }
+      }     
     }
+  }  
+
+  foreach my $old_gene_symbol (keys %$old_gfs) {
+    my $core_gene_names = {};
+    my $old_genomic_feature = $gfa->fetch_by_gene_symbol($old_gene_symbol);
+    my $old_genomic_feature_id = $old_genomic_feature->dbID();
+    my $genes = $gene_adaptor->fetch_all_by_external_name($old_gene_symbol);
+    foreach my $gene (@$genes) {
+      my $external_name = $gene->external_name;
+      my $stable_id = $gene->stable_id;
+      next if ($stable_id =~ /^LRG/);
+      $core_gene_names->{$external_name} = 1;
+    }
+
+    my @keys_core_gene_names = keys %$core_gene_names; 
+    my $new_gene_symbol = shift @keys_core_gene_names;
+    my $genomic_feature = $gfa->fetch_by_gene_symbol($new_gene_symbol);
+    my $genomic_feature_id;
+    if ($genomic_feature) { 
+      $genomic_feature_id = $genomic_feature->dbID;   
+      my $GFDs = $gfda->fetch_all_by_GenomicFeature($old_genomic_feature); 
+      foreach my $GFD (@$GFDs) {
+        my $GFD_id = $GFD->dbID();
+        # update all GFD with new genomic_feature_id !!!
+        $dbh->do(qq{UPDATE genomic_feature_disease SET genomic_feature_id=$genomic_feature_id WHERE genomic_feature_disease_id=$GFD_id;}) or die $dbh->errstr; 
+      }
+    } else {
+      print STDERR "No genomic_feature for $new_gene_symbol\n";
+    }
+    # store synoyms
+    foreach my $new_gene_symbol (@keys_core_gene_names) {
+      $dbh->do(qq{INSERT INTO genomic_feature_synonym(genomic_feature_id, name) VALUES($genomic_feature_id, '$new_gene_symbol');}) or die $dbh->errstr; 
+    } 
+    $dbh->do(qq{INSERT INTO genomic_feature_synonym(genomic_feature_id, name) VALUES($genomic_feature_id, '$old_gene_symbol');}) or die $dbh->errstr; 
   }
+}
+
+sub delete_from_genomic_feature {
+  my $delete_gfs = shift;
+  foreach my $gf_id (keys %$delete_gfs) {
+    $dbh->do(qq{DELETE FROM genomic_feature where genomic_feature_id = $gf_id;}) or die $dbh->errstr; 
+  }  
+}
+
+sub insert_into_genomic_feature {
+  my $insert_gfs = shift;
+  while (my ($gene_symbol, $stable_id) = each %$insert_gfs) {
+    $dbh->do(qq{INSERT INTO genomic_feature(gene_symbol, ensembl_stable_id) VALUES('$gene_symbol', '$stable_id');}) or die $dbh->errstr; 
+  }
+
 }
 
 sub load_genomic_feature_from_db {
@@ -114,6 +208,21 @@ sub load_genomic_feature_from_db {
       print $gene_symbol, "\n";
     }
   } 
+  return $genomic_features;
+}
+
+sub genomic_feature_ids_from_GFDs {
+  my $genomic_features = {};
+  my $sth = $dbh->prepare(q{
+    SELECT distinct genomic_feature_id FROM genomic_feature_disease;
+  });
+  $sth->execute() or die 'Could not execute statement ' . $sth->errstr;
+  my ($gfd_id);
+  $sth->bind_columns(\$gfd_id);
+  while ($sth->fetch) {
+    $genomic_features->{$gfd_id} = 1;
+  }
+  $sth->finish();
   return $genomic_features;
 }
 
