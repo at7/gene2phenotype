@@ -177,6 +177,13 @@ sub main {
   foreach my $old_GF_id (keys %$delete_old_GF_ids) {
     $dbh->do(qq{DELETE FROM genomic_feature where genomic_feature_id = $old_GF_id;}) or die $dbh->errstr; 
   }
+
+  # update search:
+  $dbh->do(qq{TRUNCATE search;}) or die $dbh->errstr;
+  $dbh->do(qq{INSERT IGNORE INTO search SELECT gene_symbol from genomic_feature;}) or die $dbh->errstr; 
+  $dbh->do(qq{INSERT IGNORE INTO search SELECT name from disease;}) or die $dbh->errstr; 
+  $dbh->do(qq{INSERT IGNORE INTO search SELECT name from genomic_feature_synonym;}) or die $dbh->errstr; 
+
 }
 
 sub delete_from_genomic_feature {
