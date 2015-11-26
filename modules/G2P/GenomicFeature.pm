@@ -12,6 +12,7 @@ sub new {
     gene_symbol        => $params->{gene_symbol},
     mim                => $params->{mim},
     ensembl_stable_id  => $params->{ensembl_stable_id},
+    synonyms           => $params->{synonyms},
     registry           => $params->{registry},
   }, $class;
   return $self;
@@ -50,6 +51,12 @@ sub get_all_Variations {
   my $registry = $self->{registry};
   my $variation_adaptor = $registry->get_adaptor('variation');
   return $variation_adaptor->fetch_all_by_genomic_feature_id($self->genomic_feature_id);
+}
+
+sub synonyms {
+  my $self = shift;
+  my $synonyms =  join(' ', @{$self->{synonyms}});
+  return $synonyms;
 }
 
 sub get_organ_specificity_list {
