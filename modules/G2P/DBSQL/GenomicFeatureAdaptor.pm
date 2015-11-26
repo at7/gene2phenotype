@@ -125,6 +125,24 @@ sub fetch_by_synonym {
   return $self->fetch_by_dbID($genomic_feature_id);
 }
 
+
+sub _fetch_synonyms {
+  my $self = shift;
+  my $genomic_feature_id = shift;
+  my $query = "SELECT name FROM genomic_feature_synonym WHERE genomic_feature_id=$genomic_feature_id;";
+  my @synonyms = ();
+  my $name;
+  my $dbh = $self->{registry}->new_dbh;
+  my $sth = $dbh->prepare($query, {mysql_use_result => 1});
+  $sth->execute() or die 'Could not execute statement: ' . $sth->errstr;
+  $sth->bind_columns(\($name));
+  while ($sth->fetch) {
+    push @synonyms, $name;
+  }
+  $sth->finish();
+  return \@synonyms;
+}
+
 sub _fetch {
   my $self = shift;
   my $constraint = shift;
@@ -138,6 +156,7 @@ sub _fetch {
     my %genomic_feature;
     @genomic_feature{@columns} = @$row;
     $genomic_feature{registry} = $self->{registry};
+    $genomic_feature{synonyms} = $self->_fetch_synonyms($genomic_feature{genomic_feature_id});
     push @genomic_features, G2P::GenomicFeature->new(\%genomic_feature);
   }
   $sth->finish();
@@ -157,6 +176,7 @@ sub _fetch_all {
     my %genomic_feature;
     @genomic_feature{@columns} = @$row;
     $genomic_feature{registry} = $self->{registry};
+    $genomic_feature{synonyms} = $self->_fetch_synonyms($genomic_feature{dbID});
     push @genomic_features, G2P::GenomicFeature->new(\%genomic_feature);
   }
   $sth->finish();
