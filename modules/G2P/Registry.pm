@@ -97,6 +97,26 @@ sub db_connection {
   $self->{dbh} = $dbh;
 }
 
+
+sub new_dbh {
+  my $self = shift;
+  my $fh = FileHandle->new($self->{configuration_file}, 'r'); 
+
+  while (<$fh>) {
+    chomp;
+    my ($db_connection_parameter, $value) = split /=/;
+    $self->{$db_connection_parameter} = $value;
+  }
+  $fh->close();
+  my $host = $self->{host};
+  my $database = $self->{database};
+  my $user = $self->{user};
+  my $password = $self->{password};
+  my $port = $self->{port};
+  my $dbh = DBI->connect("DBI:mysql:host=$host;database=$database;port=$port", $user, $password, {'RaiseError' => 1});
+  return $dbh;
+}
+
 sub dbh {
   my $self = shift;
   return $self->{dbh};
