@@ -21,7 +21,6 @@ use G2P::Registry;
 =end
 =cut
 
-
 my $config = {};
 
 GetOptions(
@@ -47,14 +46,47 @@ $ensembl_registry->load_registry_from_db(
 );
 
 my $gene_adaptor = $ensembl_registry->get_adaptor('human', 'core', 'gene');
+my $gfa = $registry->get_adaptor('genomic_feature');
+my $gfda = $registry->get_adaptor('genomic_feature_disease');
+
+my $GTF_stable_id_2_gene_symbol = {};
+my $GTF_gene_symbol_2_stable_id = {};
+my $gf_ids_in_GFDs = genomic_feature_ids_from_GFDs(); 
+my $gf_ids_in_synonyms = genomic_feature_ids_from_synonyms();
 
 main();
 
 sub main {
-  my $gene_names = {};
+  backup();
+  read_from_gtf();
+  delete_old_features();
+  insert_new_features();
+  store_synonyms();
+  update_search();
+#  foreign_key_checks();
+}
+
+sub backup {
+  foreach my $table (qw/genomic_feature genomic_feature_disease genomic_feature_synonym/) {
+    my $sth = $dbh->prepare(qq{
+      SHOW TABLES LIKE 'BU_$table';
+    });
+    $sth->execute() or die 'Could not execute statement ' . $sth->errstr;
+    my @row = $sth->fetchrow_array;
+    if (@row) {
+      warn "Table BU_$table already exists\n";
+      $dbh->do(qq{DROP TABLE BU_$table;}) or die $dbh->errstr; 
+    }
+    $sth->finish();
+  }
+  foreach my $table (qw/genomic_feature genomic_feature_disease genomic_feature_synonym/) {
+    $dbh->do(qq{CREATE TABLE BU_$table LIKE $table;}) or die $dbh->errstr; 
+    $dbh->do(qq{INSERT INTO BU_$table SELECT * FROM $table;}) or die $dbh->errstr; 
+  }
+}
+
+sub read_from_gtf {
   my $fh = FileHandle->new($config->{gtf_file}, 'r');
-  my $gene_id_2_gene_name = {}; 
-  my $gene_name_2_gene_id = {};
   while (<$fh>) {
     next if(/^#/); #ignore header
     chomp;
@@ -73,72 +105,105 @@ sub main {
         }
       }
     }
-    my $gene_name = $attribs{gene_name};
-    $gene_name =~ s/"//g;
-    my $gene_id = $attribs{gene_id}; 
-    $gene_id =~ s/"//g;
-    $gene_id_2_gene_name->{$gene_id} = $gene_name;
-    $gene_name_2_gene_id->{$gene_name} = $gene_id;
+    my $gene_symbol = $attribs{gene_name};
+    $gene_symbol =~ s/"//g;
+    my $stable_id = $attribs{gene_id}; 
+    $stable_id =~ s/"//g;
+    $GTF_stable_id_2_gene_symbol->{$stable_id} = $gene_symbol;
+    $GTF_gene_symbol_2_stable_id->{$gene_symbol} = $stable_id;
   }
   $fh->close();
-
   if ($config->{test}) {
     die ('A working_dir must be defiened (--working_dir)') unless (defined($config->{working_dir}));
     my $working_dir = $config->{working_dir};
     my $fh_out = FileHandle->new("$working_dir/ensembl_genes.txt", 'w'); 
-    foreach my $gene_id (keys %$gene_id_2_gene_name) {
-      my $gene_name = $gene_id_2_gene_name->{$gene_id};
-      print $fh_out "$gene_id\t$gene_name\n";
+    while (my ($stable_id, $gene_symbol) = each %$GTF_stable_id_2_gene_symbol) {
+      print $fh_out "$stable_id\t$gene_symbol\n";
     }
     $fh_out->close();
   }
+}
 
-  my $gf_ids_in_GFDs = genomic_feature_ids_from_GFDs(); 
+sub delete_old_features {
+
+=begin
+  - delete old genomic_features that are not listed in the most recent GTF file
+  - check that the old entry is not used in a genomic_feature_disease or synonym 
+ 
+  - gene has synonym 
+=end
+=cut
 
   my $genomic_features_from_db = load_genomic_feature_from_db();
 
   my $delete_gfs = {};
 
-  my $gfa = $registry->get_adaptor('genomic_feature');
-  my $gfda = $registry->get_adaptor('genomic_feature_disease');
   foreach my $gene_symbol (keys %$genomic_features_from_db) {
-    if (!$gene_name_2_gene_id->{$gene_symbol}) {
+    if (!$GTF_gene_symbol_2_stable_id->{$gene_symbol}) { # not in the most recent GTF file
       foreach my $gf_id (keys %{$genomic_features_from_db->{$gene_symbol}}) {
-        if (!$gf_ids_in_GFDs->{$gf_id}) {
+        if (!$gf_ids_in_GFDs->{$gf_id} && !$gf_ids_in_synonyms->{$gf_id}) {
           $delete_gfs->{$gf_id} = 1;
         }
       }     
     }
   }  
-  
   delete_from_genomic_feature($delete_gfs);
+}
 
-  $genomic_features_from_db = load_genomic_feature_from_db();
+sub delete_from_genomic_feature {
+  my $delete_gfs = shift;
+  foreach my $gf_id (keys %$delete_gfs) {
+    print STDERR "DELETE FROM genomic_feature where genomic_feature_id=$gf_id;\n";
+    $dbh->do(qq{DELETE FROM genomic_feature where genomic_feature_id = $gf_id;}) or die $dbh->errstr; 
+  }  
+}
+
+sub insert_new_features {
+  my $genomic_features_from_db = load_genomic_feature_from_db();
+
   my $insert_gfs = {};
 
-  while (my ($gene_name, $gene_id) = each %$gene_name_2_gene_id) {
-    if (!$genomic_features_from_db->{$gene_name}) {
-      $insert_gfs->{$gene_name} = $gene_id;
+  while (my ($gene_symbol, $stable_id) = each %$GTF_gene_symbol_2_stable_id) {
+    if (!$genomic_features_from_db->{$gene_symbol}) {
+      $insert_gfs->{$gene_symbol} = $stable_id;
     }
   }
-
   insert_into_genomic_feature($insert_gfs);
+}
 
-  $genomic_features_from_db = load_genomic_feature_from_db();
+sub insert_into_genomic_feature {
+  my $insert_gfs = shift;
+  while (my ($gene_symbol, $stable_id) = each %$insert_gfs) {
+    print STDERR "INSERT INTO genomic_feature(gene_symbol, ensembl_stable_id) VALUES('$gene_symbol', '$stable_id');\n";
+    $dbh->do(qq{INSERT INTO genomic_feature(gene_symbol, ensembl_stable_id) VALUES('$gene_symbol', '$stable_id');}) or die $dbh->errstr; 
+  }
+}
+
+sub store_synonyms {
+  my $genomic_features_from_db = load_genomic_feature_from_db();
 
   my $old_gfs = {};
-  
+  my $old_synonyms = {}; 
   foreach my $gene_symbol (keys %$genomic_features_from_db) {
-    if (!$gene_name_2_gene_id->{$gene_symbol}) {
-      foreach my $gf_id (keys %{$genomic_features_from_db->{$gene_symbol}}) {
+
+    if (!$GTF_gene_symbol_2_stable_id->{$gene_symbol}) { # gene_symbol is not part of new GTF file
+
+      foreach my $gf_id (keys %{$genomic_features_from_db->{$gene_symbol}}) { # check if genomic_feature is used in GFD
+        # gene is used in a GFD but it is not an offical symbol in the GTF file, create a synonym entry 
         if ($gf_ids_in_GFDs->{$gf_id}) {
           $old_gfs->{$gene_symbol} = $gf_id;
+        }
+        # gene is used as a synonym
+        if ($gf_ids_in_synonyms->{$gf_id}) {
+          $old_synonyms->{$gf_ids_in_synonyms->{$gf_id}} = $gf_id;                            
         }
       }     
     }
   }  
 
   my $delete_old_GF_ids = {};
+
+  # Sort out genomic_features that are part of a GFD but not part of the most recent GTF file. Try and find synonyms:
   foreach my $old_gene_symbol (keys %$old_gfs) {
     my $core_gene_names = {};
     my $old_genomic_feature = $gfa->fetch_by_gene_symbol($old_gene_symbol);
@@ -162,6 +227,7 @@ sub main {
       foreach my $GFD (@$GFDs) {
         my $GFD_id = $GFD->dbID();
         # update all GFD with new genomic_feature_id !!!
+        print STDERR "UPDATE genomic_feature_disease SET genomic_feature_id=$genomic_feature_id WHERE genomic_feature_disease_id=$GFD_id;\n";
         $dbh->do(qq{UPDATE genomic_feature_disease SET genomic_feature_id=$genomic_feature_id WHERE genomic_feature_disease_id=$GFD_id;}) or die $dbh->errstr; 
       }
     } else {
@@ -169,8 +235,10 @@ sub main {
     }
     # store synoyms
     foreach my $new_gene_symbol (@keys_core_gene_names) {
+      print STDERR "INSERT INTO genomic_feature_synonym(genomic_feature_id, name) VALUES($genomic_feature_id, '$new_gene_symbol');\n";
       $dbh->do(qq{INSERT INTO genomic_feature_synonym(genomic_feature_id, name) VALUES($genomic_feature_id, '$new_gene_symbol');}) or die $dbh->errstr; 
     } 
+    print STDERR "INSERT INTO genomic_feature_synonym(genomic_feature_id, name) VALUES($genomic_feature_id, '$new_gene_symbol');\n";
     $dbh->do(qq{INSERT INTO genomic_feature_synonym(genomic_feature_id, name) VALUES($genomic_feature_id, '$old_gene_symbol');}) or die $dbh->errstr; 
   }
 
@@ -178,25 +246,9 @@ sub main {
     $dbh->do(qq{DELETE FROM genomic_feature where genomic_feature_id = $old_GF_id;}) or die $dbh->errstr; 
   }
 
-  # update search:
-  $dbh->do(qq{TRUNCATE search;}) or die $dbh->errstr;
-  $dbh->do(qq{INSERT IGNORE INTO search SELECT gene_symbol from genomic_feature;}) or die $dbh->errstr; 
-  $dbh->do(qq{INSERT IGNORE INTO search SELECT name from disease;}) or die $dbh->errstr; 
-  $dbh->do(qq{INSERT IGNORE INTO search SELECT name from genomic_feature_synonym;}) or die $dbh->errstr; 
-
-}
-
-sub delete_from_genomic_feature {
-  my $delete_gfs = shift;
-  foreach my $gf_id (keys %$delete_gfs) {
-    $dbh->do(qq{DELETE FROM genomic_feature where genomic_feature_id = $gf_id;}) or die $dbh->errstr; 
-  }  
-}
-
-sub insert_into_genomic_feature {
-  my $insert_gfs = shift;
-  while (my ($gene_symbol, $stable_id) = each %$insert_gfs) {
-    $dbh->do(qq{INSERT INTO genomic_feature(gene_symbol, ensembl_stable_id) VALUES('$gene_symbol', '$stable_id');}) or die $dbh->errstr; 
+  # Delete old synonyms:
+  while ( my($old_synonym, $genomic_feature_id) = each %$old_synonyms) {
+    $dbh->do(qq{DELETE FROM genomic_feature_synonym WHERE genomic_feature_id=$genomic_feature_id AND genomic_feature_synonym='$old_synonym';}) or die $dbh->errstr; 
   }
 
 }
@@ -238,4 +290,32 @@ sub genomic_feature_ids_from_GFDs {
   $sth->finish();
   return $genomic_features;
 }
+
+sub genomic_feature_ids_from_synonyms {
+  my $genomic_features = {};
+  my $sth = $dbh->prepare(q{
+    SELECT genomic_feature_id, name FROM genomic_feature_synonym;
+  });
+  $sth->execute() or die 'Could not execute statement ' . $sth->errstr;
+  my ($gfd_id, $gene_symbol);
+  $sth->bind_columns(\($gfd_id, $gene_symbol));
+  while ($sth->fetch) {
+    $genomic_features->{$gfd_id} = $gene_symbol;
+  }
+  $sth->finish();
+  return $genomic_features;
+}
+
+sub update_search {
+  # update search:
+  $dbh->do(qq{TRUNCATE search;}) or die $dbh->errstr;
+  $dbh->do(qq{INSERT IGNORE INTO search SELECT gene_symbol from genomic_feature;}) or die $dbh->errstr; 
+  $dbh->do(qq{INSERT IGNORE INTO search SELECT name from disease;}) or die $dbh->errstr; 
+  $dbh->do(qq{INSERT IGNORE INTO search SELECT name from genomic_feature_synonym;}) or die $dbh->errstr; 
+}
+
+sub foreign_key_checks {
+
+}
+
 
