@@ -49,6 +49,7 @@ sub store {
   # get dbID
   my $dbID = $dbh->last_insert_id(undef, undef, 'genomic_feature_disease', 'genomic_feature_disease_id'); 
   $gfd->{genomic_feature_disease_id} = $dbID;
+  $gfd->{dbID} = $dbID;
   $gfd->{registry} = $self->{registry};
 
   $self->update_log($gfd, $user, 'create');
@@ -140,6 +141,18 @@ sub fetch_by_GenomicFeature_Disease {
   my $constraint = "WHERE disease_id=$disease_id AND genomic_feature_id=$genomic_feature_id;";
   return $self->_fetch($constraint);  
 }
+
+sub fetch_by_GenomicFeature_Disease_panel_id {
+  my $self = shift;
+  my $genomic_feature = shift;
+  my $disease = shift;
+  my $panel_id = shift;
+  my $genomic_feature_id = $genomic_feature->dbID;
+  my $disease_id = $disease->dbID;
+  my $constraint = "WHERE disease_id=$disease_id AND genomic_feature_id=$genomic_feature_id AND panel_attrib=$panel_id;";
+  return $self->_fetch($constraint);  
+}
+
 
 sub fetch_all_by_GenomicFeature {
   my $self = shift;
