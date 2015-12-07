@@ -61,6 +61,17 @@ sub fetch_all_by_GenomicFeatureDisease {
   return $self->_fetch_all($constraint);
 }
 
+sub fetch_all_by_Organ {  
+  my $self = shift;
+  my $organ = shift;
+  if (!ref($organ) || !$organ->isa('G2P::Organ')) {
+    die('G2P::Organ arg expected');
+  }
+  my $organ_id = $organ->dbID;
+  my $constraint = "WHERE organ_id=$organ_id"; 
+  return $self->_fetch_all($constraint);
+}
+
 sub delete_all_by_GFD_id {
   my $self = shift;
   my $GFD_id = shift;
