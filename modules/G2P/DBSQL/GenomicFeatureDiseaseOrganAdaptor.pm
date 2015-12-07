@@ -70,6 +70,11 @@ sub delete_all_by_GFD_id {
   $sth->finish();
 }
 
+sub fetch_all {
+  my $self = shift;
+  return $self->_fetch_all('');  
+}
+
 sub _fetch_all {
   my $self = shift;
   my $constraint = shift;
