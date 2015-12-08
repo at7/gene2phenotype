@@ -21,6 +21,7 @@ use G2P::DBSQL::OrganAdaptor;
 use G2P::DBSQL::OrganSpecificityAdaptor;
 use G2P::DBSQL::UserAdaptor;
 use G2P::DBSQL::AttributeAdaptor;
+use G2P::DBSQL::EnsemblVariantAdaptor;
 
 sub new {
   my $caller = shift;
@@ -73,6 +74,8 @@ sub get_adaptor {
     return G2P::DBSQL::GFDPublicationCommentAdaptor->new($self);
   } elsif ($adaptor eq 'GFD_phenotype_comment') {
     return G2P::DBSQL::GFDPhenotypeCommentAdaptor->new($self);
+  } elsif ($adaptor eq 'ensembl_variant') {
+    return G2P::DBSQL::EnsemblVariantAdaptor->new($self);  
   } else {
     die "No adaptor found for $adaptor\n"; 
   }
