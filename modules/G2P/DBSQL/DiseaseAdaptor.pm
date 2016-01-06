@@ -81,6 +81,13 @@ sub fetch_by_dbID {
   return $self->_fetch($constraint);
 }
 
+sub fetch_all_by_substring {
+  my $self = shift;
+  my $substring = shift;
+  my $constraint = "WHERE name LIKE '%$substring%' LIMIT 20";
+  return $self->_fetch_all($constraint);
+}
+
 sub _fetch {
   my $self = shift;
   my $constraint = shift;
