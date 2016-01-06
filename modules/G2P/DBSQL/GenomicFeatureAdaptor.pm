@@ -182,7 +182,7 @@ sub _fetch_all {
     my %genomic_feature;
     @genomic_feature{@columns} = @$row;
     $genomic_feature{registry} = $self->{registry};
-    $genomic_feature{synonyms} = $self->_fetch_synonyms($genomic_feature{dbID});
+    $genomic_feature{synonyms} = $self->_fetch_synonyms($genomic_feature{genomic_feature_id});
     push @genomic_features, G2P::GenomicFeature->new(\%genomic_feature);
   }
   $sth->finish();
