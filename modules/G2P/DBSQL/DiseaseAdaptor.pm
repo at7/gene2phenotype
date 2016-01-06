@@ -107,4 +107,24 @@ sub _fetch {
   return $diseases[0];
 }
 
+sub _fetch_all {
+  my $self = shift;
+  my $constraint = shift;
+  my @diseases = ();
+  my $query = 'SELECT disease_id, name, mim FROM disease';
+  $query .= " $constraint;";
+  my $dbh = $self->{dbh};
+  my $sth = $dbh->prepare($query, {mysql_use_result => 1});
+  $sth->execute() or die 'Could not execute statement: ' . $sth->errstr;
+  while (my $row = $sth->fetchrow_arrayref()) {
+    my %disease;
+    @disease{@columns} = @$row;
+    $disease{registry} = $self->{registry};
+    push @diseases, G2P::Disease->new(\%disease);
+  }
+  $sth->finish();
+  return \@diseases;
+}
+
+
 1;
