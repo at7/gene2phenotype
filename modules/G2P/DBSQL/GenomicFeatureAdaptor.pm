@@ -125,6 +125,12 @@ sub fetch_by_synonym {
   return $self->fetch_by_dbID($genomic_feature_id);
 }
 
+sub fetch_all_by_substring {
+  my $self = shift;
+  my $substring = shift;
+  my $constraint = "WHERE gene_symbol LIKE '%$substring%' LIMIT 20"; 
+  return $self->_fetch_all($constraint);
+}
 
 sub _fetch_synonyms {
   my $self = shift;
